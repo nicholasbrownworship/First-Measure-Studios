@@ -91,6 +91,20 @@
 
     .nav-links a:hover { color: var(--amber-light); }
 
+    .nav-links a.nav-cta {
+      color: var(--amber);
+      border: 0.5px solid var(--amber-dim);
+      padding: 6px 14px;
+      border-radius: 2px;
+      transition: color 0.2s, border-color 0.2s, background 0.2s;
+    }
+
+    .nav-links a.nav-cta:hover {
+      color: var(--ink);
+      background: var(--amber);
+      border-color: var(--amber);
+    }
+
     /* ===================== HERO ===================== */
     .hero {
       min-height: 100vh;
@@ -325,6 +339,23 @@
       text-transform: uppercase;
     }
 
+    .project-site-link {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      color: var(--amber-light);
+      text-decoration: none;
+      text-transform: uppercase;
+      border-bottom: 0.5px solid rgba(232,169,42,0.4);
+      padding-bottom: 1px;
+      transition: color 0.2s, border-color 0.2s;
+    }
+
+    .project-site-link:hover {
+      color: var(--paper);
+      border-color: var(--paper);
+    }
+
     .project-status {
       display: inline-flex;
       align-items: center;
@@ -524,7 +555,8 @@
     /* ===================== RESPONSIVE ===================== */
     @media (max-width: 768px) {
       nav { padding: 16px 24px; }
-      .nav-links { gap: 20px; }
+      .nav-links { gap: 16px; }
+      .nav-links a.nav-cta { display: none; }
 
       .hero { padding: 0 24px 64px; }
       .hero-bg-line, .hero-bg-line-r { display: none; }
@@ -557,6 +589,7 @@
       <li><a href="#projects">Projects</a></li>
       <li><a href="#studio">Studio</a></li>
       <li><a href="#contact">Contact</a></li>
+      <li><a href="https://nicholasbrownworship.github.io/JediTPS/" target="_blank" rel="noopener" class="nav-cta">Jedi TPS &nearr;</a></li>
     </ul>
   </nav>
 
@@ -608,10 +641,13 @@
           </div>
           <span class="project-engine-badge">Unreal Engine 5.7.4 &middot; Blueprint + C++</span>
           <br>
-          <span class="project-status status-active">
-            <span class="status-dot"></span>
-            Active Development
-          </span>
+          <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+            <span class="project-status status-active">
+              <span class="status-dot"></span>
+              Active Development
+            </span>
+            <a href="https://nicholasbrownworship.github.io/JediTPS/" target="_blank" rel="noopener" class="project-site-link">View Project Site &nearr;</a>
+          </div>
         </div>
         <div class="project-glyph">
           <div class="glyph-circle" style="width:200px;height:200px;"></div>
