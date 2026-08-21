@@ -24,7 +24,8 @@ Independent game development studio site for First Measure Studios, based in Har
     ├── battle-map.html           Battle map grid
     ├── name-generator.html       Name generator
     ├── npc-quest-generator.html  NPC & quest hook generator
-    └── hex-map.html              Procedural hex map generator
+    ├── hex-map.html              Procedural hex map generator
+    └── logic-puzzles.html        Logic puzzle generator (mystery deduction + knights & knaves)
 ```
 
 No build step, no dependencies, no backend. Every page is plain HTML/CSS/JS and can be opened directly or served as static files.
@@ -40,7 +41,7 @@ Visual identity: dark editorial aesthetic (`--ink` background, `--amber` accent)
 
 ## DM Toolkit (`/tools`)
 
-A set of small, client-side utilities for running and building tabletop games, linked from the "Tools" tab in the main nav. All 8 are live:
+A set of small, client-side utilities for running and building tabletop games, linked from the "Tools" tab in the main nav. All 9 are live:
 
 | Tool | What it does |
 |---|---|
@@ -52,6 +53,7 @@ A set of small, client-side utilities for running and building tabletop games, l
 | Name Generator | Syllable-based name generation across 4 styles (High Fantasy, Grim/Northern, Sci-Fi, Settlement). Click a name to copy it. |
 | NPC & Quest Hook Generator | Tabbed roller for a quick NPC (role/trait/want/secret) or a quest hook with a built-in twist. |
 | Procedural Hex Map | Clustered-terrain hex grid generation with adjustable radius and reroll. |
+| Logic Puzzles | Mystery deduction grids and knights & knaves riddles — each puzzle is run through a backtracking solver before being shown, guaranteeing a unique, deducible solution rather than randomly-scattered clues. |
 
 Shared styling for all tool pages lives in `tools/shared.css` (nav, footer, page-header, section, status-badge, and fade-up scroll-reveal styles) so individual tool pages only need to define their own page-specific CSS.
 
@@ -59,7 +61,7 @@ Shared styling for all tool pages lives in `tools/shared.css` (nav, footer, page
 
 1. Copy the `<head>` / nav / footer / fade-up scaffolding from an existing tool page (e.g. `dice-calculator.html`) and link `shared.css`.
 2. Build the tool in a single self-contained HTML file — no external JS dependencies beyond Google Fonts.
-3. Add a card for it to `tools/index.html`'s grid (currently a 4-column grid, sized for 8 — adjust the column count if the total changes).
+3. Add a card for it to `tools/index.html`'s grid (currently a 3-column grid, sized for 9 — adjust the column count if the total changes, and prefer a number of tools that divides evenly to avoid an empty trailing cell).
 4. Link it from the Projects section on the main site if it's substantial enough to stand on its own.
 
 ## Deployment
