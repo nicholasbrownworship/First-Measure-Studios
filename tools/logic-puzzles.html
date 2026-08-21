@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Logic puzzle generator — verified-solvable mystery deduction grids and knights &amp; knaves riddles for puzzle rooms and downtime.">
+  <link rel="icon" href="../favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" sizes="16x16" href="../assets/favicon-16x16.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="../assets/favicon-32x32.png">
+  <link rel="apple-touch-icon" href="../assets/apple-touch-icon.png">
+  <link rel="manifest" href="../site.webmanifest">
+  <meta name="theme-color" content="#0d0b09">
+
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Logic Puzzles — First Measure Studios">
+  <meta property="og:description" content="Logic puzzle generator — verified-solvable mystery deduction grids and knights &amp; knaves riddles for puzzle rooms and downtime.">
+  <meta property="og:image" content="https://firstmeasurestudio.store/assets/og-image.png">
+  <meta property="og:url" content="https://firstmeasurestudio.store/tools/logic-puzzles.html">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Logic Puzzles — First Measure Studios">
+  <meta name="twitter:description" content="Logic puzzle generator — verified-solvable mystery deduction grids and knights &amp; knaves riddles for puzzle rooms and downtime.">
+  <meta name="twitter:image" content="https://firstmeasurestudio.store/assets/og-image.png">
+
+  <title>Logic Puzzles — First Measure Studios</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Mono:wght@300;400;500&family=Barlow+Condensed:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="shared.css">
+  <style>
+    .tabs { display: flex; gap: 1px; background: var(--rule); border: 0.5px solid var(--rule); margin-bottom: 32px; }
+    .tab {
+      flex: 1;
+      text-align: center;
+      background: var(--ink);
+      padding: 16px;
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--mist);
+      cursor: pointer;
+      transition: color 0.2s, background 0.2s;
+    }
+    .tab.is-active { color: var(--amber-light); background: var(--ash); }
+    .tab:hover { color: var(--amber-light); }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      align-items: center;
+      margin-bottom: 36px;
+    }
+
+    .btn {
+      font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
+      padding: 12px 20px; border-radius: 2px; cursor: pointer;
+      border: 0.5px solid var(--amber-dim); background: transparent; color: var(--amber);
+      transition: color 0.2s, background 0.2s, border-color 0.2s;
+    }
+    .btn:hover { color: var(--ink); background: var(--amber); border-color: var(--amber); }
+    .btn-ghost { border-color: var(--rule); color: var(--mist); }
+    .btn-ghost:hover { color: var(--paper); background: var(--ash); border-color: var(--rule); }
+
+    .size-field { display: flex; align-items: center; gap: 10px; }
+    .size-field label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--mist); }
+    .size-field input[type="range"] { width: 120px; accent-color: var(--amber); }
+    .size-val { font-family: var(--mono); font-size: 13px; color: var(--amber-light); width: 14px; }
+
+    .loading-note {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--ash);
+      letter-spacing: 0.05em;
+    }
+
+    .puzzle-title {
+      font-family: var(--serif);
+      font-size: 28px;
+      color: var(--paper);
+      margin-bottom: 24px;
+    }
+    .puzzle-title em { font-style: italic; color: var(--amber-light); }
+
+    .pools {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 32px;
+      margin-bottom: 32px;
+      padding-bottom: 28px;
+      border-bottom: 0.5px solid var(--rule);
+    }
+    .pool-group { min-width: 160px; }
+    .pool-label {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--amber-dim);
+      margin-bottom: 8px;
+    }
+    .pool-list {
+      font-size: 14px;
+      color: var(--mist);
+      line-height: 1.9;
+    }
+
+    .clue-list {
+      list-style: none;
+      counter-reset: clue-counter;
+      margin-bottom: 32px;
+    }
+    .clue-list li {
+      counter-increment: clue-counter;
+      font-size: 15px;
+      line-height: 1.7;
+      color: var(--paper);
+      padding-left: 34px;
+      position: relative;
+      margin-bottom: 14px;
+    }
+    .clue-list li::before {
+      content: counter(clue-counter) ".";
+      position: absolute;
+      left: 0;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--amber-dim);
+    }
+
+    .statement-list { margin-bottom: 32px; }
+    .statement-row {
+      padding: 16px 20px;
+      background: var(--smoke);
+      border: 0.5px solid var(--rule);
+      border-radius: 2px;
+      margin-bottom: 10px;
+      font-size: 15px;
+      line-height: 1.6;
+      color: var(--paper);
+    }
+    .statement-row .speaker-name {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--amber-dim);
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    .reveal-panel {
+      margin-top: 24px;
+      padding-top: 28px;
+      border-top: 0.5px solid var(--rule);
+    }
+
+    .solution-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      display: none;
+    }
+    .solution-table.is-visible { display: table; }
+    .solution-table th, .solution-table td {
+      text-align: left;
+      padding: 10px 16px;
+      border-bottom: 0.5px solid var(--rule);
+      font-size: 14px;
+    }
+    .solution-table th {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--amber-dim);
+    }
+    .solution-table td { color: var(--paper); }
+
+    .kk-solution {
+      display: none;
+      margin-top: 20px;
+      display: none;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .kk-solution.is-visible { display: flex; }
+    .kk-solution-chip {
+      font-family: var(--mono);
+      font-size: 12px;
+      letter-spacing: 0.05em;
+      padding: 8px 14px;
+      border-radius: 2px;
+      border: 0.5px solid var(--rule);
+    }
+    .kk-solution-chip.is-knight { color: var(--amber-light); border-color: var(--amber-dim); }
+    .kk-solution-chip.is-knave { color: var(--mist); }
+
+    .error-note {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: #c85a0a;
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a href="../index.html" class="nav-wordmark">First Measure Studios</a>
+    <ul class="nav-links">
+      <li><a href="../index.html#projects">Projects</a></li>
+      <li><a href="../index.html#studio">Studio</a></li>
+      <li><a href="index.html" class="nav-active">Tools</a></li>
+      <li><a href="../index.html#contact">Contact</a></li>
+    </ul>
+  </nav>
+
+  <div class="page-header">
+    <p class="page-eyebrow"><a href="index.html">&larr; DM Toolkit</a> &middot; Generator</p>
+    <h1 class="page-title">Logic <em>Puzzles</em></h1>
+    <p class="page-sub">Every puzzle here is checked by brute-force solver before it's shown to you — a unique, deducible solution, guaranteed, not just randomly scattered clues. Good for puzzle rooms, downtime, or a mystery your players can actually solve.</p>
+  </div>
+
+  <section id="puzzles">
+    <div class="tabs">
+      <div class="tab is-active" data-tab="grid">Mystery Deduction</div>
+      <div class="tab" data-tab="kk">Knights &amp; Knaves</div>
+    </div>
+
+    <div class="controls">
+      <button class="btn" id="generate-btn">Generate New Puzzle</button>
+      <div class="size-field">
+        <label for="size-slider" id="size-label">Suspects</label>
+        <input id="size-slider" type="range" min="3" max="5" value="4">
+        <span class="size-val" id="size-val">4</span>
+      </div>
+      <span class="loading-note" id="loading-note"></span>
+    </div>
+
+    <div id="puzzle-wrap"></div>
+  </section>
+
+  <footer>
+    <span class="footer-word">First Measure Studios</span>
+    <span class="footer-meta">Harrison, Arkansas &middot; Est. 2024</span>
+  </footer>
+
+  <script>
+    // ============================================================
+    // Shared helpers
+    // ============================================================
+    function shuffle(arr) {
+      const a = arr.slice();
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+
+    function permutations(arr) {
+      if (arr.length <= 1) return [arr];
+      const result = [];
+      for (let i = 0; i < arr.length; i++) {
+        const rest = arr.slice(0, i).concat(arr.slice(i + 1));
+        for (const p of permutations(rest)) result.push([arr[i], ...p]);
+      }
+      return result;
+    }
+
+    let activeTab = 'grid';
+
+    // ============================================================
+    // MYSTERY DEDUCTION (grid logic puzzle)
+    // ============================================================
+    const SUSPECT_NAMES = ['Baroness Thorne', 'Captain Reyes', 'the Alchemist', 'Old Maren', 'Brother Aldric', 'Vex the Wanderer', 'Lady Serevin', 'Grimsby the Trader'];
+    const WEAPONS = ['a poisoned dagger', 'a warhammer', 'a hand crossbow', 'a vial of nightshade', 'a cursed amulet', 'a silver dagger', 'a strangling cord', 'an enchanted blade'];
+    const LOCATIONS = ['the Tavern', 'the Library', 'the Old Crypt', 'the Watchtower', 'the Market Square', 'the Shrine', 'the Cellar', 'the Bell Tower'];
+    const MYSTERY_HOOKS = ['A merchant was found dead at dawn', 'The relic vanished overnight', 'Someone sabotaged the town well', 'A guard was struck down on his rounds', 'The mayor\'s signet ring went missing'];
+
+    function countGridSolutions(weaponPerms, locationPerms, clues, stopAt2) {
+      let count = 0;
+      for (const wp of weaponPerms) {
+        for (const lp of locationPerms) {
+          let ok = true;
+          for (const c of clues) {
+            if (c.type === 'sw') {
+              if ((wp[c.sIdx] === c.w) !== c.positive) { ok = false; break; }
+            } else if (c.type === 'sl') {
+              if ((lp[c.sIdx] === c.l) !== c.positive) { ok = false; break; }
+            } else if (c.type === 'wl') {
+              const sIdx = wp.indexOf(c.w);
+              if ((lp[sIdx] === c.l) !== c.positive) { ok = false; break; }
+            }
+          }
+          if (ok) {
+            count++;
+            if (stopAt2 && count >= 2) return count;
+          }
+        }
+      }
+      return count;
+    }
+
+    function clueText(c) {
+      if (c.type === 'sw') return c.positive ? `${c.s} had ${c.w}.` : `${c.s} did not have ${c.w}.`;
+      if (c.type === 'sl') return c.positive ? `${c.s} was in ${c.l}.` : `${c.s} was not in ${c.l}.`;
+      if (c.type === 'wl') return c.positive ? `Whoever had ${c.w} was in ${c.l}.` : `Whoever had ${c.w} was not in ${c.l}.`;
+    }
+
+    function generateGridPuzzle(n) {
+      const suspects = shuffle(SUSPECT_NAMES).slice(0, n);
+      const weapons = shuffle(WEAPONS).slice(0, n);
+      const locations = shuffle(LOCATIONS).slice(0, n);
+
+      const weaponOf = shuffle(weapons);
+      const locationOf = shuffle(locations);
+
+      let candidates = [];
+      for (let i = 0; i < n; i++) {
+        for (const w of weapons) candidates.push({ type: 'sw', s: suspects[i], w, sIdx: i, positive: weaponOf[i] === w });
+        for (const l of locations) candidates.push({ type: 'sl', s: suspects[i], l, sIdx: i, positive: locationOf[i] === l });
+      }
+      for (const w of weapons) {
+        for (const l of locations) {
+          const sIdx = weaponOf.indexOf(w);
+          candidates.push({ type: 'wl', w, l, positive: locationOf[sIdx] === l });
+        }
+      }
+
+      const crossNeg = shuffle(candidates.filter(c => c.type === 'wl' && !c.positive));
+      const crossPos = shuffle(candidates.filter(c => c.type === 'wl' && c.positive)).slice(0, Math.ceil(n / 2));
+      const directNeg = shuffle(candidates.filter(c => c.type !== 'wl' && !c.positive));
+      const directPos = shuffle(candidates.filter(c => c.type !== 'wl' && c.positive)).slice(0, 1);
+      const pool = [...crossNeg, ...crossPos, ...directNeg, ...directPos];
+
+      const weaponPerms = permutations(weapons);
+      const locationPerms = permutations(locations);
+
+      let chosen = [];
+      for (const c of pool) {
+        chosen.push(c);
+        if (countGridSolutions(weaponPerms, locationPerms, chosen, true) === 1) break;
+      }
+
+      if (countGridSolutions(weaponPerms, locationPerms, chosen, true) !== 1) {
+        return null; // extremely unlikely; caller will retry
+      }
+
+      let trimmed = chosen.slice();
+      let changed = true;
+      while (changed) {
+        changed = false;
+        for (let i = 0; i < trimmed.length; i++) {
+          const without = trimmed.slice(0, i).concat(trimmed.slice(i + 1));
+          if (countGridSolutions(weaponPerms, locationPerms, without, true) === 1) {
+            trimmed = without;
+            changed = true;
+            break;
+          }
+        }
+      }
+
+      return {
+        hook: MYSTERY_HOOKS[Math.floor(Math.random() * MYSTERY_HOOKS.length)],
+        suspects, weapons, locations,
+        weaponOf, locationOf,
+        clues: shuffle(trimmed)
+      };
+    }
+
+    function renderGridPuzzle(p) {
+      const wrap = document.getElementById('puzzle-wrap');
+      const cluesHtml = p.clues.map(c => `<li>${clueText(c)}</li>`).join('');
+      const rowsHtml = p.suspects.map((s, i) => `
+        <tr><td>${s}</td><td>${p.weaponOf[i]}</td><td>${p.locationOf[i]}</td></tr>
+      `).join('');
+
+      wrap.innerHTML = `
+        <p class="puzzle-title"><em>${p.hook}.</em> Work out who had what, and where.</p>
+        <div class="pools">
+          <div class="pool-group"><div class="pool-label">Suspects</div><div class="pool-list">${p.suspects.join('<br>')}</div></div>
+          <div class="pool-group"><div class="pool-label">Items</div><div class="pool-list">${p.weapons.map(w => w[0].toUpperCase()+w.slice(1)).join('<br>')}</div></div>
+          <div class="pool-group"><div class="pool-label">Locations</div><div class="pool-list">${p.locations.join('<br>')}</div></div>
+        </div>
+        <ul class="clue-list">${cluesHtml}</ul>
+        <div class="reveal-panel">
+          <button class="btn btn-ghost" id="reveal-btn">Reveal Solution</button>
+          <table class="solution-table" id="solution-table">
+            <thead><tr><th>Suspect</th><th>Item</th><th>Location</th></tr></thead>
+            <tbody>${rowsHtml}</tbody>
+          </table>
+        </div>
+      `;
+
+      document.getElementById('reveal-btn').addEventListener('click', () => {
+        const table = document.getElementById('solution-table');
+        const btn = document.getElementById('reveal-btn');
+        const showing = table.classList.toggle('is-visible');
+        btn.textContent = showing ? 'Hide Solution' : 'Reveal Solution';
+      });
+    }
+
+    // ============================================================
+    // KNIGHTS & KNAVES
+    // ============================================================
+    const KK_NAMES = ['Rowan', 'Thessaly', 'Bram', 'Ilsa', 'Corvin', 'Maelis', 'Osric', 'Yvaine'];
+
+    function countKKConsistent(n, statements, stopAt2) {
+      let count = 0;
+      const total = 1 << n;
+      for (let mask = 0; mask < total; mask++) {
+        const types = [];
+        for (let i = 0; i < n; i++) types.push(!!(mask & (1 << i)));
+        let ok = true;
+        for (const st of statements) {
+          const t1 = (st.claim1 === types[st.subj1]);
+          const t2 = (st.claim2 === types[st.subj2]);
+          const compoundTrue = st.combinator === 'AND' ? (t1 && t2) : (t1 || t2);
+          if (compoundTrue !== types[st.speaker]) { ok = false; break; }
+        }
+        if (ok) {
+          count++;
+          if (stopAt2 && count >= 2) return count;
+        }
+      }
+      return count;
+    }
+
+    function buildKKStatement(n, speaker, types) {
+      const others = shuffle(Array.from({ length: n }, (_, k) => k).filter(k => k !== speaker));
+      const [subj1, subj2] = others.slice(0, 2);
+      const combinator = Math.random() < 0.5 ? 'AND' : 'OR';
+      const desired = types[speaker];
+
+      let c1, c2;
+      if (combinator === 'AND') {
+        if (desired) { c1 = true; c2 = true; }
+        else { c1 = false; c2 = Math.random() < 0.5; }
+      } else {
+        if (desired) { c1 = true; c2 = Math.random() < 0.5; }
+        else { c1 = false; c2 = false; }
+      }
+
+      const claim1 = c1 ? types[subj1] : !types[subj1];
+      const claim2 = c2 ? types[subj2] : !types[subj2];
+      return { speaker, subj1, subj2, claim1, claim2, combinator };
+    }
+
+    function generateKKPuzzle(n) {
+      for (let attempt = 0; attempt < 300; attempt++) {
+        const types = Array.from({ length: n }, () => Math.random() < 0.5);
+        const statements = [];
+        for (let i = 0; i < n; i++) statements.push(buildKKStatement(n, i, types));
+        if (countKKConsistent(n, statements, true) === 1) {
+          const names = shuffle(KK_NAMES).slice(0, n);
+          return { names, types, statements };
+        }
+      }
+      return null;
+    }
+
+    function kkStatementText(st, names) {
+      const term = (subj, claim) => `${names[subj]} is a ${claim ? 'knight' : 'knave'}`;
+      const joiner = st.combinator === 'AND' ? 'and' : 'or';
+      return `"${term(st.subj1, st.claim1)} ${joiner} ${term(st.subj2, st.claim2)}."`;
+    }
+
+    function renderKKPuzzle(p) {
+      const wrap = document.getElementById('puzzle-wrap');
+      const rowsHtml = p.statements.map(st => `
+        <div class="statement-row">
+          <span class="speaker-name">${p.names[st.speaker]} says</span>
+          ${kkStatementText(st, p.names)}
+        </div>
+      `).join('');
+
+      const chipsHtml = p.names.map((name, i) => `
+        <span class="kk-solution-chip ${p.types[i] ? 'is-knight' : 'is-knave'}">${name} — ${p.types[i] ? 'Knight' : 'Knave'}</span>
+      `).join('');
+
+      wrap.innerHTML = `
+        <p class="puzzle-title">${p.names.length} travelers stand at a crossroads. Each is either a <em>knight</em>, who always tells the truth, or a <em>knave</em>, who always lies.</p>
+        <div class="statement-list">${rowsHtml}</div>
+        <div class="reveal-panel">
+          <button class="btn btn-ghost" id="reveal-btn">Reveal Solution</button>
+          <div class="kk-solution" id="kk-solution">${chipsHtml}</div>
+        </div>
+      `;
+
+      document.getElementById('reveal-btn').addEventListener('click', () => {
+        const panel = document.getElementById('kk-solution');
+        const btn = document.getElementById('reveal-btn');
+        const showing = panel.classList.toggle('is-visible');
+        btn.textContent = showing ? 'Hide Solution' : 'Reveal Solution';
+      });
+    }
+
+    // ============================================================
+    // Orchestration
+    // ============================================================
+    function generate() {
+      const n = parseInt(document.getElementById('size-slider').value, 10);
+      const loadingNote = document.getElementById('loading-note');
+      const wrap = document.getElementById('puzzle-wrap');
+      loadingNote.textContent = 'Solving…';
+      wrap.style.opacity = '0.4';
+
+      // yield to the browser so the loading note actually paints before the (fast but blocking) solve
+      setTimeout(() => {
+        if (activeTab === 'grid') {
+          let puzzle = null;
+          for (let i = 0; i < 5 && !puzzle; i++) puzzle = generateGridPuzzle(n);
+          if (!puzzle) {
+            wrap.innerHTML = `<p class="error-note">Couldn't find a solvable puzzle this time — try again.</p>`;
+          } else {
+            renderGridPuzzle(puzzle);
+          }
+        } else {
+          const puzzle = generateKKPuzzle(n);
+          if (!puzzle) {
+            wrap.innerHTML = `<p class="error-note">Couldn't find a solvable puzzle this time — try again.</p>`;
+          } else {
+            renderKKPuzzle(puzzle);
+          }
+        }
+        loadingNote.textContent = '';
+        wrap.style.opacity = '1';
+      }, 10);
+    }
+
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        activeTab = tab.dataset.tab;
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('is-active'));
+        tab.classList.add('is-active');
+        const label = document.getElementById('size-label');
+        const slider = document.getElementById('size-slider');
+        if (activeTab === 'grid') {
+          label.textContent = 'Suspects';
+          slider.min = 3; slider.max = 5;
+        } else {
+          label.textContent = 'Travelers';
+          slider.min = 3; slider.max = 6;
+        }
+        if (parseInt(slider.value, 10) > parseInt(slider.max, 10)) slider.value = slider.max;
+        document.getElementById('size-val').textContent = slider.value;
+        generate();
+      });
+    });
+
+    document.getElementById('size-slider').addEventListener('input', (e) => {
+      document.getElementById('size-val').textContent = e.target.value;
+    });
+    document.getElementById('size-slider').addEventListener('change', generate);
+    document.getElementById('generate-btn').addEventListener('click', generate);
+
+    generate();
+  </script>
+
+</body>
+</html>
