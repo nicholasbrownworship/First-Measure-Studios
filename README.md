@@ -10,7 +10,10 @@ Independent game development studio site for First Measure Studios, based in Har
 /
 ├── index.html          Main site — hero, projects grid, studio info, contact
 ├── privacy.html         Privacy page
+├── favicon.ico           Multi-resolution favicon
+├── site.webmanifest      Android/PWA icon manifest
 ├── CNAME                 Custom domain config for GitHub Pages
+├── assets/               Favicon sizes, apple-touch-icon, and OG social preview image
 └── tools/                DM Toolkit — see below
     ├── index.html               Tools landing page
     ├── shared.css               Shared nav/footer/layout styles for all tool pages
