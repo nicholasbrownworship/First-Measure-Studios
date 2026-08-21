@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Name generator — fast fantasy and sci-fi name generation across configurable styles.">
+  <title>Name Generator — First Measure Studios</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Mono:wght@300;400;500&family=Barlow+Condensed:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="shared.css">
+  <style>
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 40px;
+    }
+
+    .style-btn {
+      font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
+      padding: 10px 16px; border-radius: 2px; cursor: pointer;
+      border: 0.5px solid var(--rule); background: transparent; color: var(--mist);
+      transition: color 0.2s, background 0.2s, border-color 0.2s;
+    }
+    .style-btn.is-active { color: var(--amber-light); border-color: var(--amber-dim); background: var(--smoke); }
+    .style-btn:hover { color: var(--amber-light); border-color: var(--amber-dim); }
+
+    .count-field { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+    .count-field label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--mist); }
+    .count-field input {
+      width: 60px;
+      background: var(--smoke);
+      border: 0.5px solid var(--rule);
+      color: var(--paper);
+      font-family: var(--mono);
+      font-size: 13px;
+      padding: 8px 10px;
+      border-radius: 2px;
+    }
+    .count-field input:focus { outline: none; border-color: var(--amber); }
+
+    .roll-btn {
+      font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
+      padding: 12px 22px; border-radius: 2px; cursor: pointer;
+      border: 0.5px solid var(--amber-dim); background: transparent; color: var(--amber);
+      transition: color 0.2s, background 0.2s, border-color 0.2s;
+    }
+    .roll-btn:hover { color: var(--ink); background: var(--amber); border-color: var(--amber); }
+
+    .name-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 1px;
+      background: var(--rule);
+      border: 0.5px solid var(--rule);
+    }
+
+    .name-card {
+      background: var(--ink);
+      padding: 24px;
+      font-family: var(--serif);
+      font-size: 22px;
+      font-weight: 400;
+      transition: background 0.2s;
+      cursor: pointer;
+    }
+    .name-card:hover { background: var(--ash); }
+    .name-card .copied-hint {
+      display: block;
+      font-family: var(--mono);
+      font-size: 9px;
+      color: var(--amber-dim);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-top: 8px;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .name-card.is-copied .copied-hint { opacity: 1; }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a href="../index.html" class="nav-wordmark">First Measure Studios</a>
+    <ul class="nav-links">
+      <li><a href="../index.html#projects">Projects</a></li>
+      <li><a href="../index.html#studio">Studio</a></li>
+      <li><a href="index.html" class="nav-active">Tools</a></li>
+      <li><a href="../index.html#contact">Contact</a></li>
+    </ul>
+  </nav>
+
+  <div class="page-header">
+    <p class="page-eyebrow"><a href="index.html">&larr; DM Toolkit</a> &middot; Generator</p>
+    <h1 class="page-title">Name <em>Generator</em></h1>
+    <p class="page-sub">Fast fantasy and sci-fi name generation across a few configurable styles. Click a name to copy it.</p>
+  </div>
+
+  <section id="generator">
+    <div class="controls" id="style-controls"></div>
+
+    <div class="controls">
+      <button class="roll-btn" id="roll-btn">Generate Names</button>
+      <div class="count-field">
+        <label for="count">Count</label>
+        <input id="count" type="number" value="12" min="1" max="60">
+      </div>
+    </div>
+
+    <div class="name-grid" id="name-grid"></div>
+  </section>
+
+  <footer>
+    <span class="footer-word">First Measure Studios</span>
+    <span class="footer-meta">Harrison, Arkansas &middot; Est. 2024</span>
+  </footer>
+
+  <script>
+    const styles = {
+      highFantasy: {
+        label: 'High Fantasy',
+        syllables: {
+          pre: ['Ae', 'Bel', 'Cal', 'Dor', 'El', 'Fen', 'Gal', 'Hal', 'Il', 'Kae', 'Lor', 'Mir', 'Nym', 'Or', 'Pel', 'Quel', 'Ry', 'Sil', 'Thal', 'Val'],
+          mid: ['an', 'ar', 'en', 'el', 'or', 'ath', 'in', 'yn', 'ir', ''],
+          post: ['dor', 'iel', 'ion', 'wyn', 'ric', 'las', 'wen', 'thas', 'nor', 'vin']
+        }
+      },
+      grim: {
+        label: 'Grim / Northern',
+        syllables: {
+          pre: ['Bra', 'Drav', 'Grim', 'Hrol', 'Ing', 'Kor', 'Mor', 'Rag', 'Skar', 'Thrag', 'Ulf', 'Vor', 'Wulf', 'Bjor', 'Dag'],
+          mid: ['ga', 'ka', 'ra', 'da', 'or', 'un', 'ok', ''],
+          post: ['gar', 'mund', 'thor', 'grim', 'nir', 'vald', 'ulf', 'skar', 'ken', 'dor']
+        }
+      },
+      sciFi: {
+        label: 'Sci-Fi',
+        syllables: {
+          pre: ['Ax', 'Ze', 'Ky', 'Vel', 'Ori', 'Nex', 'Quor', 'Trex', 'Vash', 'Zor', 'Jax', 'Ryn', 'Cael', 'Dex'],
+          mid: ['on', 'ex', 'ar', 'us', 'ix', 'yr', 'th', ''],
+          post: ['ion', 'ex', 'ar', 'us', 'yx', 'is', 'on', 'ath', 'or', 'en']
+        }
+      },
+      settlement: {
+        label: 'Settlement / Place',
+        syllables: {
+          pre: ['Ash', 'Black', 'Dun', 'Fair', 'Green', 'Hollow', 'Iron', 'Mill', 'North', 'Oak', 'Raven', 'Stone', 'West', 'Wolf'],
+          mid: ['', '', '', '', 'en', 'ing'],
+          post: ['ford', 'haven', 'hollow', 'burg', 'mere', 'wood', 'field', 'ridge', 'gate', 'vale']
+        }
+      }
+    };
+
+    let activeStyle = 'highFantasy';
+
+    function renderStyleButtons() {
+      const wrap = document.getElementById('style-controls');
+      wrap.innerHTML = Object.keys(styles).map(key => `
+        <button class="style-btn ${key === activeStyle ? 'is-active' : ''}" data-style="${key}">${styles[key].label}</button>
+      `).join('');
+      wrap.querySelectorAll('.style-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          activeStyle = btn.dataset.style;
+          renderStyleButtons();
+          generate();
+        });
+      });
+    }
+
+    function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+    function generateName(styleKey) {
+      const s = styles[styleKey].syllables;
+      let name = pick(s.pre) + pick(s.mid) + pick(s.post);
+      return name;
+    }
+
+    function generate() {
+      const count = Math.min(60, Math.max(1, parseInt(document.getElementById('count').value, 10) || 12));
+      const grid = document.getElementById('name-grid');
+      const seen = new Set();
+      const names = [];
+      let attempts = 0;
+      while (names.length < count && attempts < count * 20) {
+        const n = generateName(activeStyle);
+        attempts++;
+        if (seen.has(n)) continue;
+        seen.add(n);
+        names.push(n);
+      }
+      grid.innerHTML = names.map(n => `
+        <div class="name-card" data-name="${n}">
+          ${n}
+          <span class="copied-hint">Copied</span>
+        </div>
+      `).join('');
+
+      grid.querySelectorAll('.name-card').forEach(card => {
+        card.addEventListener('click', () => {
+          navigator.clipboard.writeText(card.dataset.name).catch(() => {});
+          card.classList.add('is-copied');
+          setTimeout(() => card.classList.remove('is-copied'), 1200);
+        });
+      });
+    }
+
+    document.getElementById('roll-btn').addEventListener('click', generate);
+    document.getElementById('count').addEventListener('change', generate);
+
+    renderStyleButtons();
+    generate();
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="NPC and quest hook generator — roll a quick NPC or quest hook when a session needs one on the spot.">
+  <title>NPC &amp; Quest Hook Generator — First Measure Studios</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Mono:wght@300;400;500&family=Barlow+Condensed:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="shared.css">
+  <style>
+    .tabs { display: flex; gap: 1px; background: var(--rule); border: 0.5px solid var(--rule); margin-bottom: 40px; }
+    .tab {
+      flex: 1;
+      text-align: center;
+      background: var(--ink);
+      padding: 16px;
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--mist);
+      cursor: pointer;
+      transition: color 0.2s, background 0.2s;
+    }
+    .tab.is-active { color: var(--amber-light); background: var(--ash); }
+    .tab:hover { color: var(--amber-light); }
+
+    .roll-btn {
+      font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
+      padding: 14px 24px; border-radius: 2px; cursor: pointer;
+      border: 0.5px solid var(--amber-dim); background: transparent; color: var(--amber);
+      transition: color 0.2s, background 0.2s, border-color 0.2s;
+      margin-bottom: 40px;
+    }
+    .roll-btn:hover { color: var(--ink); background: var(--amber); border-color: var(--amber); }
+
+    .result-card {
+      background: var(--smoke);
+      border: 0.5px solid var(--rule);
+      border-radius: 2px;
+      padding: 40px;
+      min-height: 200px;
+    }
+
+    .npc-name {
+      font-family: var(--serif);
+      font-size: 34px;
+      color: var(--amber-light);
+      margin-bottom: 20px;
+    }
+
+    .npc-line {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 12px;
+      font-size: 15px;
+      line-height: 1.6;
+    }
+
+    .npc-line .label {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--amber-dim);
+      width: 100px;
+      flex-shrink: 0;
+      padding-top: 3px;
+    }
+
+    .npc-line .value { color: var(--paper); font-weight: 300; }
+
+    .quest-text {
+      font-family: var(--serif);
+      font-size: 24px;
+      font-weight: 300;
+      line-height: 1.5;
+      color: var(--paper);
+    }
+
+    .quest-text em { color: var(--amber-light); font-style: italic; }
+
+    .placeholder {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--ash);
+      letter-spacing: 0.05em;
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a href="../index.html" class="nav-wordmark">First Measure Studios</a>
+    <ul class="nav-links">
+      <li><a href="../index.html#projects">Projects</a></li>
+      <li><a href="../index.html#studio">Studio</a></li>
+      <li><a href="index.html" class="nav-active">Tools</a></li>
+      <li><a href="../index.html#contact">Contact</a></li>
+    </ul>
+  </nav>
+
+  <div class="page-header">
+    <p class="page-eyebrow"><a href="index.html">&larr; DM Toolkit</a> &middot; Generator</p>
+    <h1 class="page-title">NPC &amp; Quest <em>Hook</em><br>Generator</h1>
+    <p class="page-sub">Roll a quick NPC or quest hook when a session needs one on the spot &mdash; a name, a want, and a complication.</p>
+  </div>
+
+  <section id="generator">
+    <div class="tabs">
+      <div class="tab is-active" data-tab="npc">NPC</div>
+      <div class="tab" data-tab="quest">Quest Hook</div>
+    </div>
+
+    <button class="roll-btn" id="roll-btn">Roll</button>
+
+    <div class="result-card" id="result-card">
+      <p class="placeholder">Press Roll to generate an NPC.</p>
+    </div>
+  </section>
+
+  <footer>
+    <span class="footer-word">First Measure Studios</span>
+    <span class="footer-meta">Harrison, Arkansas &middot; Est. 2024</span>
+  </footer>
+
+  <script>
+    let activeTab = 'npc';
+
+    const nameSyllables = {
+      pre: ['Ae', 'Bel', 'Cor', 'Dor', 'El', 'Fen', 'Gal', 'Hal', 'Il', 'Kae', 'Lor', 'Mir', 'Nym', 'Or', 'Pel', 'Ry', 'Sil', 'Thal', 'Val', 'Wren'],
+      post: ['dor', 'iel', 'ric', 'las', 'wen', 'thas', 'nor', 'vin', 'wyn', 'mund', 'grave', 'thorne']
+    };
+
+    function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+    function genName() {
+      return pick(nameSyllables.pre) + pick(nameSyllables.post);
+    }
+
+    const roles = ['a weathered blacksmith', 'a nervous merchant', 'a retired soldier', 'a wandering scholar', 'a tavern keeper', 'a local healer', 'a grave-tender', 'a hunter', 'a disgraced noble', 'a traveling minstrel', 'a shrine caretaker', 'a river ferryman'];
+    const traits = ['speaks only in half-truths', 'has a habit of finishing others\' sentences', 'never makes eye contact', 'collects small trinkets from strangers', 'laughs at the wrong moments', 'is fiercely loyal once trust is earned', 'always seems to know more than they say', 'carries an old debt they won\'t discuss'];
+    const wants = ['to be believed, for once', 'to leave this place before winter', 'to protect someone who doesn\'t want protecting', 'to settle a score from long ago', 'to be forgiven for something unspoken', 'to find a way out of a bad deal', 'to prove they\'re more than their reputation'];
+    const secrets = ['is secretly in debt to someone dangerous', 'witnessed something they were never meant to see', 'is not who they claim to be', 'has been quietly helping the other side', 'knows exactly where the missing person went', 'is dying and hasn\'t told anyone'];
+
+    function generateNPC() {
+      return {
+        name: genName(),
+        role: pick(roles),
+        trait: pick(traits),
+        want: pick(wants),
+        secret: pick(secrets)
+      };
+    }
+
+    const questGivers = ['a frightened villager', 'a dying soldier', 'a local lord', 'a traveling merchant', 'an old friend', 'a stranger in a tavern', 'a child who won\'t give their name', 'a wounded messenger'];
+    const questTasks = ['recover something stolen', 'find someone who vanished without a trace', 'escort a dangerous prisoner', 'uncover the truth behind a string of disappearances', 'deliver a message no one wants delivered', 'settle a dispute before it turns violent', 'clear out something nesting beneath the town', 'break a curse before the next full moon'];
+    const questTwists = ['the person who hired you isn\'t telling the whole truth', 'the target isn\'t guilty of what they\'re accused of', 'someone else is racing to get there first', 'the reward comes with strings no one mentioned', 'what you\'re looking for has already changed hands', 'the real threat isn\'t the one you were warned about'];
+
+    function generateQuest() {
+      const giver = pick(questGivers);
+      const task = pick(questTasks);
+      const twist = pick(questTwists);
+      return `<em>${giver.charAt(0).toUpperCase() + giver.slice(1)}</em> asks the party to ${task}. But ${twist}.`;
+    }
+
+    function renderNPC(npc) {
+      document.getElementById('result-card').innerHTML = `
+        <div class="npc-name">${npc.name}</div>
+        <div class="npc-line"><span class="label">Role</span><span class="value">${npc.role}</span></div>
+        <div class="npc-line"><span class="label">Trait</span><span class="value">${npc.trait}</span></div>
+        <div class="npc-line"><span class="label">Wants</span><span class="value">${npc.want}</span></div>
+        <div class="npc-line"><span class="label">Secret</span><span class="value">${npc.secret}</span></div>
+      `;
+    }
+
+    function renderQuest(text) {
+      document.getElementById('result-card').innerHTML = `<div class="quest-text">${text}</div>`;
+    }
+
+    function roll() {
+      if (activeTab === 'npc') {
+        renderNPC(generateNPC());
+      } else {
+        renderQuest(generateQuest());
+      }
+    }
+
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        activeTab = tab.dataset.tab;
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('is-active'));
+        tab.classList.add('is-active');
+        document.getElementById('result-card').innerHTML = `<p class="placeholder">Press Roll to generate ${activeTab === 'npc' ? 'an NPC' : 'a quest hook'}.</p>`;
+      });
+    });
+
+    document.getElementById('roll-btn').addEventListener('click', roll);
+  </script>
+
+</body>
+</html>

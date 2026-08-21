@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Battle map grid — a pan-and-zoom tactical grid with draggable tokens for quick encounters.">
+  <title>Battle Map Grid — First Measure Studios</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Mono:wght@300;400;500&family=Barlow+Condensed:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="shared.css">
+  <style>
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+
+    .btn {
+      font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
+      padding: 10px 16px; border-radius: 2px; cursor: pointer;
+      border: 0.5px solid var(--amber-dim); background: transparent; color: var(--amber);
+      transition: color 0.2s, background 0.2s, border-color 0.2s;
+    }
+    .btn:hover { color: var(--ink); background: var(--amber); border-color: var(--amber); }
+    .btn-ghost { border-color: var(--rule); color: var(--mist); }
+    .btn-ghost:hover { color: var(--paper); background: var(--ash); border-color: var(--rule); }
+
+    .color-swatches { display: flex; gap: 6px; align-items: center; margin-left: 4px; }
+    .swatch {
+      width: 22px; height: 22px; border-radius: 50%;
+      border: 1.5px solid var(--rule);
+      cursor: pointer;
+    }
+    .swatch.is-selected { border-color: var(--paper); }
+
+    .hint {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--ash);
+      letter-spacing: 0.05em;
+      margin-left: auto;
+    }
+
+    .map-frame {
+      border: 0.5px solid var(--rule);
+      background: var(--smoke);
+      overflow: hidden;
+      position: relative;
+      height: 620px;
+      cursor: grab;
+    }
+    .map-frame.is-panning { cursor: grabbing; }
+
+    .map-frame svg { width: 100%; height: 100%; display: block; }
+
+    .grid-line { stroke: rgba(200,135,10,0.14); stroke-width: 1; }
+    .grid-line-major { stroke: rgba(200,135,10,0.28); stroke-width: 1; }
+
+    .token {
+      cursor: grab;
+    }
+    .token:active { cursor: grabbing; }
+    .token circle { stroke: var(--ink); stroke-width: 2; }
+    .token text {
+      font-family: var(--mono);
+      font-size: 11px;
+      fill: var(--ink);
+      text-anchor: middle;
+      dominant-baseline: central;
+      pointer-events: none;
+      user-select: none;
+    }
+    .token-remove-hint { fill: var(--ink); font-size: 9px; }
+
+    @media (max-width: 700px) {
+      .map-frame { height: 460px; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a href="../index.html" class="nav-wordmark">First Measure Studios</a>
+    <ul class="nav-links">
+      <li><a href="../index.html#projects">Projects</a></li>
+      <li><a href="../index.html#studio">Studio</a></li>
+      <li><a href="index.html" class="nav-active">Tools</a></li>
+      <li><a href="../index.html#contact">Contact</a></li>
+    </ul>
+  </nav>
+
+  <div class="page-header">
+    <p class="page-eyebrow"><a href="index.html">&larr; DM Toolkit</a> &middot; Session</p>
+    <h1 class="page-title">Battle Map <em>Grid</em></h1>
+    <p class="page-sub">A blank tactical grid for quick in-person or remote encounters. Pan by dragging the background, scroll to zoom, and drag tokens into place.</p>
+  </div>
+
+  <section id="map">
+    <div class="toolbar">
+      <button class="btn" id="add-token">+ Add Token</button>
+      <div class="color-swatches" id="swatches"></div>
+      <button class="btn btn-ghost" id="zoom-reset">Reset View</button>
+      <button class="btn btn-ghost" id="clear-tokens">Clear Tokens</button>
+      <span class="hint">Drag background to pan &middot; scroll to zoom &middot; double-click a token to remove it</span>
+    </div>
+
+    <div class="map-frame" id="map-frame">
+      <svg id="map-svg" viewBox="0 0 1000 700"></svg>
+    </div>
+  </section>
+
+  <footer>
+    <span class="footer-word">First Measure Studios</span>
+    <span class="footer-meta">Harrison, Arkansas &middot; Est. 2024</span>
+  </footer>
+
+  <script>
+    const svg = document.getElementById('map-svg');
+    const frame = document.getElementById('map-frame');
+    const CELL = 50;
+    const GRID_EXTENT = 4000;
+
+    const colors = ['#c8870a', '#6b9e6b', '#8a6bc8', '#c85a5a', '#5a9ec8'];
+    let selectedColor = colors[0];
+    let tokens = [];
+    let tokenCounter = 1;
+
+    let view = { x: 0, y: 0, scale: 1 };
+
+    function renderSwatches() {
+      const wrap = document.getElementById('swatches');
+      wrap.innerHTML = colors.map(c => `<div class="swatch ${c === selectedColor ? 'is-selected' : ''}" style="background:${c}" data-color="${c}"></div>`).join('');
+      wrap.querySelectorAll('.swatch').forEach(el => {
+        el.addEventListener('click', () => {
+          selectedColor = el.dataset.color;
+          renderSwatches();
+        });
+      });
+    }
+
+    function screenToWorld(px, py) {
+      const rect = frame.getBoundingClientRect();
+      const vb = svg.viewBox.baseVal;
+      const sx = ((px - rect.left) / rect.width) * vb.width + vb.x;
+      const sy = ((py - rect.top) / rect.height) * vb.height + vb.y;
+      return { x: sx, y: sy };
+    }
+
+    function setViewBox() {
+      const w = 1000 / view.scale;
+      const h = 700 / view.scale;
+      svg.setAttribute('viewBox', `${view.x} ${view.y} ${w} ${h}`);
+    }
+
+    function renderGrid() {
+      let lines = '';
+      for (let x = -GRID_EXTENT; x <= GRID_EXTENT; x += CELL) {
+        const major = (x / CELL) % 5 === 0;
+        lines += `<line class="${major ? 'grid-line-major' : 'grid-line'}" x1="${x}" y1="${-GRID_EXTENT}" x2="${x}" y2="${GRID_EXTENT}" />`;
+      }
+      for (let y = -GRID_EXTENT; y <= GRID_EXTENT; y += CELL) {
+        const major = (y / CELL) % 5 === 0;
+        lines += `<line class="${major ? 'grid-line-major' : 'grid-line'}" x1="${-GRID_EXTENT}" y1="${y}" x2="${GRID_EXTENT}" y2="${y}" />`;
+      }
+      return `<g id="grid-layer">${lines}</g>`;
+    }
+
+    function renderTokens() {
+      return `<g id="token-layer">` + tokens.map(t => `
+        <g class="token" data-id="${t.id}" transform="translate(${t.x},${t.y})">
+          <circle r="18" fill="${t.color}" />
+          <text>${t.label}</text>
+        </g>
+      `).join('') + `</g>`;
+    }
+
+    function render() {
+      svg.innerHTML = renderGrid() + renderTokens();
+      setViewBox();
+      attachTokenHandlers();
+    }
+
+    // ----- Panning -----
+    let isPanning = false;
+    let panStart = null;
+
+    frame.addEventListener('mousedown', (e) => {
+      if (e.target.closest('.token')) return;
+      isPanning = true;
+      frame.classList.add('is-panning');
+      panStart = { x: e.clientX, y: e.clientY, vx: view.x, vy: view.y };
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      if (isPanning) {
+        const rect = frame.getBoundingClientRect();
+        const dxPx = e.clientX - panStart.x;
+        const dyPx = e.clientY - panStart.y;
+        const vb = svg.viewBox.baseVal;
+        view.x = panStart.vx - (dxPx / rect.width) * vb.width;
+        view.y = panStart.vy - (dyPx / rect.height) * vb.height;
+        setViewBox();
+      }
+      if (draggingToken) {
+        const world = screenToWorld(e.clientX, e.clientY);
+        draggingToken.x = world.x - dragOffset.x;
+        draggingToken.y = world.y - dragOffset.y;
+        render();
+      }
+    });
+
+    window.addEventListener('mouseup', () => {
+      isPanning = false;
+      frame.classList.remove('is-panning');
+      draggingToken = null;
+    });
+
+    frame.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      const zoomFactor = e.deltaY < 0 ? 1.1 : 0.9;
+      const newScale = Math.min(3, Math.max(0.3, view.scale * zoomFactor));
+      const world = screenToWorld(e.clientX, e.clientY);
+      view.x = world.x - (world.x - view.x) * (view.scale / newScale);
+      view.y = world.y - (world.y - view.y) * (view.scale / newScale);
+      view.scale = newScale;
+      setViewBox();
+    }, { passive: false });
+
+    // ----- Token dragging -----
+    let draggingToken = null;
+    let dragOffset = { x: 0, y: 0 };
+
+    function attachTokenHandlers() {
+      svg.querySelectorAll('.token').forEach(el => {
+        el.addEventListener('mousedown', (e) => {
+          e.stopPropagation();
+          const id = el.dataset.id;
+          const token = tokens.find(t => t.id === id);
+          const world = screenToWorld(e.clientX, e.clientY);
+          dragOffset = { x: world.x - token.x, y: world.y - token.y };
+          draggingToken = token;
+        });
+        el.addEventListener('dblclick', (e) => {
+          e.stopPropagation();
+          const id = el.dataset.id;
+          tokens = tokens.filter(t => t.id !== id);
+          render();
+        });
+      });
+    }
+
+    document.getElementById('add-token').addEventListener('click', () => {
+      const label = prompt('Token label (e.g. initials or a number):', String(tokenCounter));
+      if (label === null) return;
+      tokens.push({
+        id: 'tok-' + Date.now() + Math.random(),
+        x: view.x + (1000 / view.scale) / 2,
+        y: view.y + (700 / view.scale) / 2,
+        label: label.slice(0, 4) || String(tokenCounter),
+        color: selectedColor
+      });
+      tokenCounter++;
+      render();
+    });
+
+    document.getElementById('zoom-reset').addEventListener('click', () => {
+      view = { x: 0, y: 0, scale: 1 };
+      setViewBox();
+    });
+
+    document.getElementById('clear-tokens').addEventListener('click', () => {
+      if (tokens.length && !confirm('Remove all tokens from the map?')) return;
+      tokens = [];
+      render();
+    });
+
+    renderSwatches();
+    render();
+  </script>
+
+</body>
+</html>

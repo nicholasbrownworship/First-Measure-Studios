@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Procedural hex map generator — generate a hex-grid regional map on demand, with a reroll for a fresh layout.">
+  <title>Procedural Hex Map — First Measure Studios</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Mono:wght@300;400;500&family=Barlow+Condensed:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="shared.css">
+  <style>
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      align-items: center;
+      margin-bottom: 32px;
+    }
+
+    .btn {
+      font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
+      padding: 12px 20px; border-radius: 2px; cursor: pointer;
+      border: 0.5px solid var(--amber-dim); background: transparent; color: var(--amber);
+      transition: color 0.2s, background 0.2s, border-color 0.2s;
+    }
+    .btn:hover { color: var(--ink); background: var(--amber); border-color: var(--amber); }
+
+    .radius-field { display: flex; align-items: center; gap: 10px; }
+    .radius-field label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--mist); }
+    .radius-field input[type="range"] { width: 140px; accent-color: var(--amber); }
+    .radius-val { font-family: var(--mono); font-size: 13px; color: var(--amber-light); width: 20px; }
+
+    .legend {
+      display: flex;
+      gap: 18px;
+      flex-wrap: wrap;
+      margin-left: auto;
+    }
+    .legend-item { display: flex; align-items: center; gap: 8px; font-family: var(--mono); font-size: 10px; letter-spacing: 0.05em; color: var(--mist); text-transform: uppercase; }
+    .legend-swatch { width: 12px; height: 12px; border-radius: 2px; }
+
+    .map-frame {
+      border: 0.5px solid var(--rule);
+      background: var(--smoke);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .map-frame svg { max-width: 100%; height: auto; }
+
+    .hex { stroke: var(--ink); stroke-width: 1.5; }
+    .hex-label { font-family: var(--mono); font-size: 8px; fill: rgba(13,11,9,0.35); text-anchor: middle; pointer-events: none; }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a href="../index.html" class="nav-wordmark">First Measure Studios</a>
+    <ul class="nav-links">
+      <li><a href="../index.html#projects">Projects</a></li>
+      <li><a href="../index.html#studio">Studio</a></li>
+      <li><a href="index.html" class="nav-active">Tools</a></li>
+      <li><a href="../index.html#contact">Contact</a></li>
+    </ul>
+  </nav>
+
+  <div class="page-header">
+    <p class="page-eyebrow"><a href="index.html">&larr; DM Toolkit</a> &middot; Generator</p>
+    <h1 class="page-title">Procedural <em>Hex</em><br>Map</h1>
+    <p class="page-sub">Generate a hex-grid regional map with clustered terrain. Reroll for a fresh layout, or adjust the radius for a bigger region.</p>
+  </div>
+
+  <section id="hexmap">
+    <div class="controls">
+      <button class="btn" id="reroll">Reroll Map</button>
+      <div class="radius-field">
+        <label for="radius">Radius</label>
+        <input id="radius" type="range" min="3" max="9" value="6">
+        <span class="radius-val" id="radius-val">6</span>
+      </div>
+      <div class="legend" id="legend"></div>
+    </div>
+
+    <div class="map-frame">
+      <svg id="hex-svg"></svg>
+    </div>
+  </section>
+
+  <footer>
+    <span class="footer-word">First Measure Studios</span>
+    <span class="footer-meta">Harrison, Arkansas &middot; Est. 2024</span>
+  </footer>
+
+  <script>
+    const terrains = [
+      { key: 'plains',  color: '#8a9a5b', weight: 4 },
+      { key: 'forest',  color: '#3f5c3a', weight: 4 },
+      { key: 'hills',   color: '#9e7b4f', weight: 3 },
+      { key: 'mountain',color: '#6e6a63', weight: 2 },
+      { key: 'water',   color: '#3a6b8a', weight: 2 },
+      { key: 'swamp',   color: '#4f5c3f', weight: 1 },
+      { key: 'desert',  color: '#c8a86a', weight: 1 }
+    ];
+
+    function renderLegend() {
+      document.getElementById('legend').innerHTML = terrains.map(t => `
+        <div class="legend-item"><span class="legend-swatch" style="background:${t.color}"></span>${t.key}</div>
+      `).join('');
+    }
+
+    function axialToPixel(q, r, size) {
+      const x = size * (Math.sqrt(3) * q + Math.sqrt(3) / 2 * r);
+      const y = size * (3 / 2 * r);
+      return { x, y };
+    }
+
+    function hexPoints(cx, cy, size) {
+      let pts = [];
+      for (let i = 0; i < 6; i++) {
+        const angle = Math.PI / 180 * (60 * i - 30);
+        pts.push(`${(cx + size * Math.cos(angle)).toFixed(2)},${(cy + size * Math.sin(angle)).toFixed(2)}`);
+      }
+      return pts.join(' ');
+    }
+
+    function weightedPick() {
+      const totalWeight = terrains.reduce((s, t) => s + t.weight, 0);
+      let roll = Math.random() * totalWeight;
+      for (const t of terrains) {
+        if (roll < t.weight) return t;
+        roll -= t.weight;
+      }
+      return terrains[0];
+    }
+
+    function generateMap(radius) {
+      const cells = [];
+      for (let q = -radius; q <= radius; q++) {
+        const r1 = Math.max(-radius, -q - radius);
+        const r2 = Math.min(radius, -q + radius);
+        for (let r = r1; r <= r2; r++) {
+          cells.push({ q, r });
+        }
+      }
+
+      // Simple clustering: assign a terrain seed to a handful of cells, then let
+      // remaining cells lean toward whichever seed is nearest, with randomness mixed in.
+      const seedCount = Math.max(4, Math.floor(cells.length / 8));
+      const seeds = [];
+      const shuffled = [...cells].sort(() => Math.random() - 0.5);
+      for (let i = 0; i < seedCount; i++) {
+        seeds.push({ cell: shuffled[i], terrain: weightedPick() });
+      }
+
+      const assigned = cells.map(c => {
+        let nearest = seeds[0];
+        let bestDist = Infinity;
+        for (const s of seeds) {
+          const dq = c.q - s.cell.q, dr = c.r - s.cell.r;
+          const dist = (Math.abs(dq) + Math.abs(dr) + Math.abs(dq + dr)) / 2;
+          if (dist < bestDist) { bestDist = dist; nearest = s; }
+        }
+        // 75% follow the nearest seed's terrain, 25% roll independently for texture
+        const terrain = Math.random() < 0.75 ? nearest.terrain : weightedPick();
+        return { ...c, terrain };
+      });
+
+      return assigned;
+    }
+
+    function render() {
+      const radius = parseInt(document.getElementById('radius').value, 10);
+      document.getElementById('radius-val').textContent = radius;
+
+      const size = 28;
+      const cells = generateMap(radius);
+
+      const positions = cells.map(c => ({ ...c, ...axialToPixel(c.q, c.r, size) }));
+      const xs = positions.map(p => p.x);
+      const ys = positions.map(p => p.y);
+      const minX = Math.min(...xs) - size * 1.2;
+      const maxX = Math.max(...xs) + size * 1.2;
+      const minY = Math.min(...ys) - size * 1.2;
+      const maxY = Math.max(...ys) + size * 1.2;
+
+      const svg = document.getElementById('hex-svg');
+      svg.setAttribute('viewBox', `${minX} ${minY} ${maxX - minX} ${maxY - minY}`);
+      svg.setAttribute('width', Math.min(900, maxX - minX));
+
+      svg.innerHTML = positions.map(p => `
+        <polygon class="hex" points="${hexPoints(p.x, p.y, size)}" fill="${p.terrain.color}">
+          <title>${p.terrain.key} (${p.q}, ${p.r})</title>
+        </polygon>
+      `).join('');
+    }
+
+    document.getElementById('reroll').addEventListener('click', render);
+    document.getElementById('radius').addEventListener('input', render);
+
+    renderLegend();
+    render();
+  </script>
+
+</body>
+</html>

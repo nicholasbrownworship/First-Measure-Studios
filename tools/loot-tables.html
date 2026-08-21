@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Encounter and loot table generator — define your own weighted tables and roll on demand.">
+  <title>Encounter &amp; Loot Tables — First Measure Studios</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Mono:wght@300;400;500&family=Barlow+Condensed:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="shared.css">
+  <style>
+    .layout { display: grid; grid-template-columns: 280px 1fr; gap: 48px; }
+    @media (max-width: 900px) { .layout { grid-template-columns: 1fr; gap: 32px; } }
+
+    .table-list { display: flex; flex-direction: column; gap: 1px; background: var(--rule); border: 0.5px solid var(--rule); margin-bottom: 16px; }
+    .table-item {
+      background: var(--ink);
+      padding: 14px 16px;
+      cursor: pointer;
+      font-family: var(--mono);
+      font-size: 12px;
+      letter-spacing: 0.03em;
+      color: var(--mist);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: background 0.2s, color 0.2s;
+    }
+    .table-item:hover { background: var(--ash); color: var(--paper); }
+    .table-item.is-selected { background: var(--ash); color: var(--amber-light); }
+    .table-item .count { color: var(--ash); font-size: 10px; }
+
+    .btn {
+      font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
+      padding: 10px 16px; border-radius: 2px; cursor: pointer;
+      border: 0.5px solid var(--amber-dim); background: transparent; color: var(--amber);
+      transition: color 0.2s, background 0.2s, border-color 0.2s;
+    }
+    .btn:hover { color: var(--ink); background: var(--amber); border-color: var(--amber); }
+    .btn-ghost { border-color: var(--rule); color: var(--mist); }
+    .btn-ghost:hover { color: var(--paper); background: var(--ash); border-color: var(--rule); }
+    .btn-block { width: 100%; }
+
+    .table-name-input {
+      width: 100%;
+      background: var(--smoke);
+      border: 0.5px solid var(--rule);
+      color: var(--paper);
+      font-family: var(--serif);
+      font-size: 22px;
+      padding: 10px 14px;
+      border-radius: 2px;
+      margin-bottom: 24px;
+    }
+    .table-name-input:focus { outline: none; border-color: var(--amber); }
+
+    .entry-header {
+      display: grid;
+      grid-template-columns: 70px 1fr auto;
+      gap: 10px;
+      margin-bottom: 10px;
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--mist);
+    }
+
+    .entry-row {
+      display: grid;
+      grid-template-columns: 70px 1fr auto;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    .entry-row input {
+      background: var(--smoke);
+      border: 0.5px solid var(--rule);
+      color: var(--paper);
+      font-family: var(--mono);
+      font-size: 13px;
+      padding: 9px 10px;
+      border-radius: 2px;
+      width: 100%;
+    }
+    .entry-row input:focus { outline: none; border-color: var(--amber); }
+
+    .entry-remove {
+      background: transparent;
+      border: 0.5px solid var(--rule);
+      color: var(--mist);
+      width: 34px;
+      border-radius: 2px;
+      cursor: pointer;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .entry-remove:hover { color: #c85a0a; border-color: #c85a0a; }
+
+    .add-entry {
+      margin-top: 4px;
+      width: 100%;
+      background: transparent;
+      border: 0.5px dashed var(--rule);
+      color: var(--mist);
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 12px;
+      border-radius: 2px;
+      cursor: pointer;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .add-entry:hover { color: var(--amber-light); border-color: var(--amber-dim); }
+
+    .roll-panel {
+      margin-top: 40px;
+      padding-top: 32px;
+      border-top: 0.5px solid var(--rule);
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+
+    .roll-result {
+      font-family: var(--serif);
+      font-size: 26px;
+      color: var(--amber-light);
+      min-height: 36px;
+    }
+
+    .empty-state {
+      padding: 60px 28px;
+      text-align: center;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--ash);
+      background: var(--ink);
+      border: 0.5px solid var(--rule);
+      letter-spacing: 0.05em;
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a href="../index.html" class="nav-wordmark">First Measure Studios</a>
+    <ul class="nav-links">
+      <li><a href="../index.html#projects">Projects</a></li>
+      <li><a href="../index.html#studio">Studio</a></li>
+      <li><a href="index.html" class="nav-active">Tools</a></li>
+      <li><a href="../index.html#contact">Contact</a></li>
+    </ul>
+  </nav>
+
+  <div class="page-header">
+    <p class="page-eyebrow"><a href="index.html">&larr; DM Toolkit</a> &middot; Generator</p>
+    <h1 class="page-title">Encounter &amp; <em>Loot</em><br>Tables</h1>
+    <p class="page-sub">Build your own weighted tables for random encounters, loot, or anything else, then roll on demand. Saved locally in this browser.</p>
+  </div>
+
+  <section id="tables">
+    <div class="layout">
+
+      <div>
+        <div id="table-list" class="table-list"></div>
+        <button class="btn btn-block" id="new-table">+ New Table</button>
+      </div>
+
+      <div id="editor-wrap"></div>
+
+    </div>
+  </section>
+
+  <footer>
+    <span class="footer-word">First Measure Studios</span>
+    <span class="footer-meta">Harrison, Arkansas &middot; Est. 2024</span>
+  </footer>
+
+  <script>
+    const STORAGE_KEY = 'fms-loot-tables';
+
+    function load() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) return JSON.parse(raw);
+      } catch (e) {}
+      return {
+        tables: [
+          {
+            id: 'starter',
+            name: 'Roadside Encounter',
+            entries: [
+              { weight: 3, text: 'Nothing — the road is quiet.' },
+              { weight: 2, text: 'A pair of wolves, hungry and bold.' },
+              { weight: 1, text: 'A merchant caravan, willing to trade.' },
+              { weight: 1, text: 'Bandits demanding a toll.' }
+            ]
+          }
+        ],
+        selectedId: 'starter'
+      };
+    }
+
+    let state = load();
+
+    function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+
+    function currentTable() {
+      return state.tables.find(t => t.id === state.selectedId) || null;
+    }
+
+    function renderTableList() {
+      const list = document.getElementById('table-list');
+      if (state.tables.length === 0) {
+        list.innerHTML = '';
+        return;
+      }
+      list.innerHTML = state.tables.map(t => `
+        <div class="table-item ${t.id === state.selectedId ? 'is-selected' : ''}" data-id="${t.id}">
+          <span>${t.name || 'Untitled'}</span>
+          <span class="count">${t.entries.length}</span>
+        </div>
+      `).join('');
+
+      list.querySelectorAll('.table-item').forEach(el => {
+        el.addEventListener('click', () => {
+          state.selectedId = el.dataset.id;
+          save();
+          render();
+        });
+      });
+    }
+
+    function renderEditor() {
+      const wrap = document.getElementById('editor-wrap');
+      const table = currentTable();
+
+      if (!table) {
+        wrap.innerHTML = `<div class="empty-state">No table selected — create one to get started.</div>`;
+        return;
+      }
+
+      let entriesHtml = table.entries.map((e, i) => `
+        <div class="entry-row">
+          <input type="number" min="1" value="${e.weight}" data-i="${i}" data-field="weight" title="Weight">
+          <input type="text" value="${e.text.replace(/"/g, '&quot;')}" data-i="${i}" data-field="text" placeholder="Result text">
+          <button class="entry-remove" data-i="${i}" title="Remove">&times;</button>
+        </div>
+      `).join('');
+
+      wrap.innerHTML = `
+        <input type="text" class="table-name-input" id="table-name" value="${table.name.replace(/"/g, '&quot;')}">
+        <div class="entry-header"><span>Weight</span><span>Result</span><span></span></div>
+        <div id="entries">${entriesHtml}</div>
+        <button class="add-entry" id="add-entry">+ Add Entry</button>
+
+        <div class="roll-panel">
+          <button class="btn" id="roll-btn">Roll on This Table</button>
+          <button class="btn btn-ghost" id="delete-table">Delete Table</button>
+          <div class="roll-result" id="roll-result"></div>
+        </div>
+      `;
+
+      document.getElementById('table-name').addEventListener('input', (e) => {
+        table.name = e.target.value;
+        save();
+        renderTableList();
+      });
+
+      wrap.querySelectorAll('.entry-row input').forEach(inp => {
+        inp.addEventListener('input', () => {
+          const i = parseInt(inp.dataset.i, 10);
+          const field = inp.dataset.field;
+          if (field === 'weight') {
+            const val = parseInt(inp.value, 10);
+            table.entries[i].weight = Number.isNaN(val) || val < 1 ? 1 : val;
+          } else {
+            table.entries[i].text = inp.value;
+          }
+          save();
+        });
+      });
+
+      wrap.querySelectorAll('.entry-remove').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const i = parseInt(btn.dataset.i, 10);
+          table.entries.splice(i, 1);
+          save();
+          renderEditor();
+        });
+      });
+
+      document.getElementById('add-entry').addEventListener('click', () => {
+        table.entries.push({ weight: 1, text: '' });
+        save();
+        renderEditor();
+      });
+
+      document.getElementById('delete-table').addEventListener('click', () => {
+        if (!confirm(`Delete "${table.name}"? This can't be undone.`)) return;
+        state.tables = state.tables.filter(t => t.id !== table.id);
+        state.selectedId = state.tables.length ? state.tables[0].id : null;
+        save();
+        render();
+      });
+
+      document.getElementById('roll-btn').addEventListener('click', () => {
+        const resultEl = document.getElementById('roll-result');
+        const validEntries = table.entries.filter(e => e.text.trim());
+        if (validEntries.length === 0) {
+          resultEl.textContent = 'Add at least one entry with text first.';
+          return;
+        }
+        const totalWeight = validEntries.reduce((sum, e) => sum + e.weight, 0);
+        let roll = Math.random() * totalWeight;
+        let picked = validEntries[0];
+        for (const e of validEntries) {
+          if (roll < e.weight) { picked = e; break; }
+          roll -= e.weight;
+        }
+        resultEl.textContent = picked.text;
+      });
+    }
+
+    function render() {
+      renderTableList();
+      renderEditor();
+    }
+
+    document.getElementById('new-table').addEventListener('click', () => {
+      const id = 'table-' + Date.now();
+      state.tables.push({ id, name: 'New Table', entries: [{ weight: 1, text: '' }] });
+      state.selectedId = id;
+      save();
+      render();
+    });
+
+    render();
+  </script>
+
+</body>
+</html>

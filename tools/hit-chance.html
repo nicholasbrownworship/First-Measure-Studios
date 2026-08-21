@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Hit-chance curve visualizer — plot a distance-to-hit-chance falloff curve from your own breakpoints.">
+  <title>Hit-Chance Curve Visualizer — First Measure Studios</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Mono:wght@300;400;500&family=Barlow+Condensed:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="shared.css">
+  <style>
+    .layout { display: grid; grid-template-columns: 340px 1fr; gap: 64px; }
+    @media (max-width: 900px) { .layout { grid-template-columns: 1fr; gap: 48px; } }
+
+    .field-label {
+      font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em;
+      text-transform: uppercase; color: var(--amber); margin-bottom: 10px; display: block;
+    }
+
+    .bp-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr auto;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .bp-row input {
+      width: 100%;
+      background: var(--smoke);
+      border: 0.5px solid var(--rule);
+      color: var(--paper);
+      font-family: var(--mono);
+      font-size: 14px;
+      padding: 10px 12px;
+      border-radius: 2px;
+    }
+
+    .bp-row input:focus { outline: none; border-color: var(--amber); }
+
+    .bp-remove {
+      background: transparent;
+      border: 0.5px solid var(--rule);
+      color: var(--mist);
+      font-family: var(--mono);
+      font-size: 13px;
+      width: 34px; height: 34px;
+      border-radius: 2px;
+      cursor: pointer;
+      transition: color 0.2s, border-color 0.2s;
+    }
+
+    .bp-remove:hover { color: #c85a0a; border-color: #c85a0a; }
+
+    .bp-header {
+      display: grid;
+      grid-template-columns: 1fr 1fr auto;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .bp-header span {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--mist);
+    }
+
+    .add-btn {
+      margin-top: 8px;
+      width: 100%;
+      background: transparent;
+      border: 0.5px dashed var(--rule);
+      color: var(--mist);
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 12px;
+      border-radius: 2px;
+      cursor: pointer;
+      transition: color 0.2s, border-color 0.2s;
+    }
+
+    .add-btn:hover { color: var(--amber-light); border-color: var(--amber-dim); }
+
+    .max-range-row { margin-top: 32px; padding-top: 24px; border-top: 0.5px solid var(--rule); }
+    .max-range-row input {
+      width: 140px;
+      background: var(--smoke);
+      border: 0.5px solid var(--rule);
+      color: var(--paper);
+      font-family: var(--mono);
+      font-size: 14px;
+      padding: 10px 12px;
+      border-radius: 2px;
+    }
+    .max-range-row input:focus { outline: none; border-color: var(--amber); }
+
+    .probe-row { margin-top: 32px; padding-top: 24px; border-top: 0.5px solid var(--rule); }
+    .probe-row input {
+      width: 140px;
+      background: var(--smoke);
+      border: 0.5px solid var(--rule);
+      color: var(--paper);
+      font-family: var(--mono);
+      font-size: 14px;
+      padding: 10px 12px;
+      border-radius: 2px;
+    }
+    .probe-row input:focus { outline: none; border-color: var(--amber); }
+    .probe-result {
+      margin-top: 16px;
+      font-family: var(--serif);
+      font-size: 15px;
+      color: var(--mist);
+      line-height: 1.6;
+    }
+    .probe-result .amt { color: var(--amber-light); font-size: 22px; }
+
+    .chart-area { width: 100%; }
+    .chart-area svg { width: 100%; height: auto; display: block; overflow: visible; }
+
+    .curve-line { fill: none; stroke: var(--amber-light); stroke-width: 2; }
+    .curve-fill { fill: rgba(200,135,10,0.12); }
+    .grid-line { stroke: var(--rule); stroke-width: 1; }
+    .bp-dot { fill: var(--amber-light); stroke: var(--ink); stroke-width: 2; }
+    .axis-label { font-family: var(--mono); fill: var(--mist); font-size: 11px; }
+
+    .error-msg { font-family: var(--mono); font-size: 12px; color: #c85a0a; margin-top: 12px; min-height: 16px; }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a href="../index.html" class="nav-wordmark">First Measure Studios</a>
+    <ul class="nav-links">
+      <li><a href="../index.html#projects">Projects</a></li>
+      <li><a href="../index.html#studio">Studio</a></li>
+      <li><a href="index.html" class="nav-active">Tools</a></li>
+      <li><a href="../index.html#contact">Contact</a></li>
+    </ul>
+  </nav>
+
+  <div class="page-header">
+    <p class="page-eyebrow"><a href="index.html">&larr; DM Toolkit</a> &middot; Probability</p>
+    <h1 class="page-title">Hit-Chance <em>Curve</em><br>Visualizer</h1>
+    <p class="page-sub">Set your own distance-to-hit-chance breakpoints and see the resulting piecewise falloff curve &mdash; useful for tuning ranged weapon accuracy by feel.</p>
+  </div>
+
+  <section id="visualizer">
+    <div class="layout">
+
+      <div>
+        <label class="field-label">Breakpoints</label>
+        <div class="bp-header"><span>Distance</span><span>Hit %</span><span></span></div>
+        <div id="bp-list"></div>
+        <button class="add-btn" id="add-bp">+ Add Breakpoint</button>
+        <div class="error-msg" id="error"></div>
+
+        <div class="max-range-row">
+          <label class="field-label" for="max-range">Hard Max Range (0% beyond this)</label>
+          <input id="max-range" type="number" value="3600">
+        </div>
+
+        <div class="probe-row">
+          <label class="field-label" for="probe">Check hit % at distance</label>
+          <input id="probe" type="number" value="1500">
+          <div class="probe-result" id="probe-result"></div>
+        </div>
+      </div>
+
+      <div>
+        <div class="chart-area" id="chart-area"></div>
+      </div>
+
+    </div>
+  </section>
+
+  <footer>
+    <span class="footer-word">First Measure Studios</span>
+    <span class="footer-meta">Harrison, Arkansas &middot; Est. 2024</span>
+  </footer>
+
+  <script>
+    let breakpoints = [
+      { d: 0, h: 95 },
+      { d: 900, h: 80 },
+      { d: 1800, h: 55 },
+      { d: 2700, h: 25 }
+    ];
+
+    function renderBpList() {
+      const list = document.getElementById('bp-list');
+      list.innerHTML = '';
+      breakpoints.forEach((bp, i) => {
+        const row = document.createElement('div');
+        row.className = 'bp-row';
+        row.innerHTML = `
+          <input type="number" value="${bp.d}" data-i="${i}" data-field="d">
+          <input type="number" value="${bp.h}" data-i="${i}" data-field="h" min="0" max="100">
+          <button class="bp-remove" data-i="${i}" title="Remove">&times;</button>
+        `;
+        list.appendChild(row);
+      });
+
+      list.querySelectorAll('input').forEach(inp => {
+        inp.addEventListener('input', () => {
+          const i = parseInt(inp.dataset.i, 10);
+          const field = inp.dataset.field;
+          const val = parseFloat(inp.value);
+          if (!Number.isNaN(val)) breakpoints[i][field] = val;
+          update();
+        });
+      });
+
+      list.querySelectorAll('.bp-remove').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const i = parseInt(btn.dataset.i, 10);
+          if (breakpoints.length <= 2) return;
+          breakpoints.splice(i, 1);
+          renderBpList();
+          update();
+        });
+      });
+    }
+
+    document.getElementById('add-bp').addEventListener('click', () => {
+      const last = breakpoints[breakpoints.length - 1];
+      breakpoints.push({ d: last.d + 500, h: Math.max(0, last.h - 20) });
+      renderBpList();
+      update();
+    });
+
+    function validate() {
+      const errorEl = document.getElementById('error');
+      const sorted = [...breakpoints].sort((a, b) => a.d - b.d);
+      const ds = sorted.map(b => b.d);
+      const isSorted = breakpoints.every((b, i) => i === 0 || b.d > breakpoints[i - 1].d);
+      if (!isSorted) {
+        errorEl.textContent = 'Breakpoints should be entered in increasing distance order.';
+        return false;
+      }
+      errorEl.textContent = '';
+      return true;
+    }
+
+    function hitChanceAt(distance, maxRange) {
+      if (distance <= breakpoints[0].d) return breakpoints[0].h;
+      for (let i = 0; i < breakpoints.length - 1; i++) {
+        const a = breakpoints[i], b = breakpoints[i + 1];
+        if (distance >= a.d && distance <= b.d) {
+          const t = (distance - a.d) / (b.d - a.d);
+          return a.h + t * (b.h - a.h);
+        }
+      }
+      const last = breakpoints[breakpoints.length - 1];
+      if (distance >= maxRange) return 0;
+      const t = (distance - last.d) / (maxRange - last.d);
+      return Math.max(0, last.h * (1 - t));
+    }
+
+    function renderChart(maxRange) {
+      const w = 900, h = 380;
+      const padL = 50, padB = 36, padT = 16, padR = 16;
+      const plotW = w - padL - padR;
+      const plotH = h - padT - padB;
+
+      const xMax = maxRange;
+      const yMax = 100;
+
+      const xToPx = d => padL + (d / xMax) * plotW;
+      const yToPx = pct => padT + plotH - (pct / yMax) * plotH;
+
+      let points = [];
+      const steps = 60;
+      for (let i = 0; i <= steps; i++) {
+        const d = (i / steps) * xMax;
+        points.push([d, hitChanceAt(d, maxRange)]);
+      }
+
+      const pathD = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${xToPx(p[0]).toFixed(1)} ${yToPx(p[1]).toFixed(1)}`).join(' ');
+      const fillD = pathD + ` L ${xToPx(xMax).toFixed(1)} ${yToPx(0).toFixed(1)} L ${xToPx(0).toFixed(1)} ${yToPx(0).toFixed(1)} Z`;
+
+      let gridLines = '';
+      for (let pct = 0; pct <= 100; pct += 25) {
+        const y = yToPx(pct);
+        gridLines += `<line class="grid-line" x1="${padL}" y1="${y}" x2="${w - padR}" y2="${y}" />`;
+        gridLines += `<text class="axis-label" x="${padL - 10}" y="${y + 4}" text-anchor="end">${pct}%</text>`;
+      }
+
+      let xLabels = '';
+      const xTickCount = 6;
+      for (let i = 0; i <= xTickCount; i++) {
+        const d = (i / xTickCount) * xMax;
+        const x = xToPx(d);
+        xLabels += `<text class="axis-label" x="${x}" y="${h - padB + 20}" text-anchor="middle">${Math.round(d)}</text>`;
+      }
+
+      let bpDots = '';
+      breakpoints.forEach(bp => {
+        bpDots += `<circle class="bp-dot" cx="${xToPx(bp.d)}" cy="${yToPx(bp.h)}" r="4.5"><title>${bp.d}: ${bp.h}%</title></circle>`;
+      });
+
+      const area = document.getElementById('chart-area');
+      area.innerHTML = `
+        <svg viewBox="0 0 ${w} ${h}">
+          ${gridLines}
+          <path class="curve-fill" d="${fillD}" />
+          <path class="curve-line" d="${pathD}" />
+          ${bpDots}
+          ${xLabels}
+          <text class="axis-label" x="${w / 2}" y="${h - 2}" text-anchor="middle" style="letter-spacing:0.1em;">DISTANCE (UE UNITS)</text>
+        </svg>
+      `;
+    }
+
+    function update() {
+      if (!validate()) return;
+      const maxRange = parseFloat(document.getElementById('max-range').value) || breakpoints[breakpoints.length - 1].d + 1000;
+      renderChart(maxRange);
+
+      const probe = parseFloat(document.getElementById('probe').value);
+      const resultEl = document.getElementById('probe-result');
+      if (!Number.isNaN(probe)) {
+        const chance = hitChanceAt(probe, maxRange);
+        resultEl.innerHTML = `<span class="amt">${chance.toFixed(1)}%</span> chance to hit at ${probe} units`;
+      } else {
+        resultEl.textContent = '';
+      }
+    }
+
+    document.getElementById('max-range').addEventListener('input', update);
+    document.getElementById('probe').addEventListener('input', update);
+
+    renderBpList();
+    update();
+  </script>
+
+</body>
+</html>
