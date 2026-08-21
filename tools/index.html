@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="DM Toolkit — a set of small, fast utilities for running and building tabletop games, from First Measure Studios.">
+  <title>Tools — First Measure Studios</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Mono:wght@300;400;500&family=Barlow+Condensed:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="shared.css">
+  <style>
+    .tools-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: var(--rule);
+      border: 0.5px solid var(--rule);
+    }
+
+    .tool-card {
+      background: var(--ink);
+      padding: 40px 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      text-decoration: none;
+      color: inherit;
+      transition: background 0.25s ease;
+      position: relative;
+    }
+
+    .tool-card.is-live:hover { background: var(--smoke); }
+    .tool-card.is-live { cursor: pointer; }
+    .tool-card.is-soon { cursor: default; }
+
+    .tool-tag {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--amber-dim);
+    }
+
+    .tool-name {
+      font-family: var(--serif);
+      font-size: 26px;
+      font-weight: 400;
+      line-height: 1.15;
+    }
+
+    .tool-card.is-soon .tool-name { color: var(--mist); }
+
+    .tool-desc {
+      font-size: 14px;
+      line-height: 1.6;
+      color: var(--mist);
+      flex: 1;
+    }
+
+    .tool-go {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--amber);
+      margin-top: 4px;
+    }
+
+    .tool-card.is-live:hover .tool-go { color: var(--amber-light); }
+
+    @media (max-width: 900px) {
+      .tools-grid { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 600px) {
+      .tools-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <a href="../index.html" class="nav-wordmark">First Measure Studios</a>
+    <ul class="nav-links">
+      <li><a href="../index.html#projects">Projects</a></li>
+      <li><a href="../index.html#studio">Studio</a></li>
+      <li><a href="index.html" class="nav-active">Tools</a></li>
+      <li><a href="../index.html#contact">Contact</a></li>
+    </ul>
+  </nav>
+
+  <!-- PAGE HEADER -->
+  <div class="page-header">
+    <p class="page-eyebrow">Utilities &middot; Built for the Table</p>
+    <h1 class="page-title">DM<br><em>Toolkit</em></h1>
+    <p class="page-sub">A growing set of small, fast tools for running and building tabletop games &mdash; probability, generation, and session utilities, built to be used mid-session with nothing to install.</p>
+  </div>
+
+  <!-- TOOLS -->
+  <section id="tools">
+    <div class="section-header">
+      <span class="section-num">01</span>
+      <h2 class="section-title">The Tools</h2>
+      <div class="section-rule"></div>
+    </div>
+
+    <div class="tools-grid">
+
+      <a href="dice-calculator.html" class="tool-card is-live fade-up">
+        <p class="tool-tag">Probability</p>
+        <h3 class="tool-name">Dice Probability Calculator</h3>
+        <p class="tool-desc">Enter any dice formula and see the full outcome distribution &mdash; mean, spread, and chance of hitting a target number.</p>
+        <span class="project-status status-active"><span class="status-dot"></span>Live</span>
+        <span class="tool-go">Open Tool &nearr;</span>
+      </a>
+
+      <div class="tool-card is-soon fade-up delay-1">
+        <p class="tool-tag">Probability</p>
+        <h3 class="tool-name">Hit-Chance Curve Visualizer</h3>
+        <p class="tool-desc">Plot a piecewise distance-to-hit-chance curve from your own breakpoints and see the resulting graph instantly.</p>
+        <span class="project-status status-soon"><span class="status-dot"></span>Coming Soon</span>
+      </div>
+
+      <div class="tool-card is-soon fade-up delay-2">
+        <p class="tool-tag">Session</p>
+        <h3 class="tool-name">Initiative Tracker</h3>
+        <p class="tool-desc">Add combatants, auto-sort by initiative, and track HP and conditions through a live encounter.</p>
+        <span class="project-status status-soon"><span class="status-dot"></span>Coming Soon</span>
+      </div>
+
+      <div class="tool-card is-soon fade-up">
+        <p class="tool-tag">Generator</p>
+        <h3 class="tool-name">Encounter &amp; Loot Tables</h3>
+        <p class="tool-desc">Define your own tables and roll random encounters or loot on demand, sharable by link.</p>
+        <span class="project-status status-soon"><span class="status-dot"></span>Coming Soon</span>
+      </div>
+
+      <div class="tool-card is-soon fade-up delay-1">
+        <p class="tool-tag">Session</p>
+        <h3 class="tool-name">Battle Map Grid</h3>
+        <p class="tool-desc">A pan-and-zoom tactical grid with draggable tokens, built for quick in-person or remote encounters.</p>
+        <span class="project-status status-soon"><span class="status-dot"></span>Coming Soon</span>
+      </div>
+
+      <div class="tool-card is-soon fade-up delay-2">
+        <p class="tool-tag">Generator</p>
+        <h3 class="tool-name">Name Generator</h3>
+        <p class="tool-desc">Fast fantasy and sci-fi name generation across configurable cultures and styles.</p>
+        <span class="project-status status-soon"><span class="status-dot"></span>Coming Soon</span>
+      </div>
+
+      <div class="tool-card is-soon fade-up">
+        <p class="tool-tag">Generator</p>
+        <h3 class="tool-name">NPC &amp; Quest Hook Generator</h3>
+        <p class="tool-desc">Roll a quick NPC or quest hook when a session needs one on the spot.</p>
+        <span class="project-status status-soon"><span class="status-dot"></span>Coming Soon</span>
+      </div>
+
+      <div class="tool-card is-soon fade-up delay-1">
+        <p class="tool-tag">Generator</p>
+        <h3 class="tool-name">Procedural Hex Map</h3>
+        <p class="tool-desc">Generate a hex-grid regional map on demand, with a reroll for a fresh layout each time.</p>
+        <span class="project-status status-soon"><span class="status-dot"></span>Coming Soon</span>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <span class="footer-word">First Measure Studios</span>
+    <span class="footer-meta">Harrison, Arkansas &middot; Est. 2024</span>
+  </footer>
+
+  <script>
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) { e.target.classList.add('visible'); }
+      });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Dice probability calculator — enter a dice formula and see the full outcome distribution.">
+  <title>Dice Probability Calculator — First Measure Studios</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Mono:wght@300;400;500&family=Barlow+Condensed:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="shared.css">
+  <style>
+    .calc-wrap {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 64px;
+    }
+
+    @media (max-width: 900px) {
+      .calc-wrap { grid-template-columns: 1fr; gap: 48px; }
+    }
+
+    .field-label {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--amber);
+      margin-bottom: 10px;
+      display: block;
+    }
+
+    .formula-input {
+      width: 100%;
+      background: var(--smoke);
+      border: 0.5px solid var(--rule);
+      color: var(--paper);
+      font-family: var(--mono);
+      font-size: 20px;
+      padding: 16px 18px;
+      border-radius: 2px;
+      letter-spacing: 0.03em;
+    }
+
+    .formula-input:focus {
+      outline: none;
+      border-color: var(--amber);
+    }
+
+    .formula-hint {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--ash);
+      margin-top: 10px;
+      line-height: 1.6;
+    }
+
+    .presets {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 20px;
+    }
+
+    .preset-btn {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--mist);
+      background: transparent;
+      border: 0.5px solid var(--rule);
+      padding: 6px 12px;
+      border-radius: 2px;
+      cursor: pointer;
+      transition: color 0.2s, border-color 0.2s;
+    }
+
+    .preset-btn:hover {
+      color: var(--amber-light);
+      border-color: var(--amber-dim);
+    }
+
+    .target-row {
+      margin-top: 40px;
+      padding-top: 32px;
+      border-top: 0.5px solid var(--rule);
+    }
+
+    .target-input {
+      width: 100px;
+      background: var(--smoke);
+      border: 0.5px solid var(--rule);
+      color: var(--paper);
+      font-family: var(--mono);
+      font-size: 15px;
+      padding: 10px 12px;
+      border-radius: 2px;
+      margin-top: 10px;
+    }
+
+    .target-input:focus { outline: none; border-color: var(--amber); }
+
+    .target-result {
+      margin-top: 16px;
+      font-family: var(--serif);
+      font-size: 15px;
+      color: var(--mist);
+      line-height: 1.6;
+    }
+
+    .target-result .amt { color: var(--amber-light); font-size: 22px; }
+
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      background: var(--rule);
+      border: 0.5px solid var(--rule);
+      margin-bottom: 48px;
+    }
+
+    .stat-cell {
+      background: var(--ink);
+      padding: 20px 22px;
+    }
+
+    .stat-cell .stat-num {
+      font-family: var(--serif);
+      font-size: 32px;
+      font-weight: 300;
+      color: var(--amber-light);
+      line-height: 1;
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    .stat-cell .stat-label {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      color: var(--mist);
+      text-transform: uppercase;
+    }
+
+    @media (max-width: 600px) {
+      .stat-grid { grid-template-columns: 1fr 1fr; }
+    }
+
+    .chart-area {
+      position: relative;
+      width: 100%;
+    }
+
+    .chart-area svg { width: 100%; height: auto; display: block; }
+
+    .bar { fill: var(--amber-dim); transition: fill 0.15s ease; }
+    .bar:hover { fill: var(--amber-light); }
+    .bar-label, .bar-pct {
+      font-family: var(--mono);
+      fill: var(--mist);
+    }
+
+    .error-msg {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: #c85a0a;
+      margin-top: 12px;
+      min-height: 16px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <a href="../index.html" class="nav-wordmark">First Measure Studios</a>
+    <ul class="nav-links">
+      <li><a href="../index.html#projects">Projects</a></li>
+      <li><a href="../index.html#studio">Studio</a></li>
+      <li><a href="index.html" class="nav-active">Tools</a></li>
+      <li><a href="../index.html#contact">Contact</a></li>
+    </ul>
+  </nav>
+
+  <!-- PAGE HEADER -->
+  <div class="page-header">
+    <p class="page-eyebrow"><a href="index.html">&larr; DM Toolkit</a> &middot; Probability</p>
+    <h1 class="page-title">Dice <em>Probability</em><br>Calculator</h1>
+    <p class="page-sub">Enter any dice formula and see the exact outcome distribution &mdash; every possible total, computed directly, not sampled.</p>
+  </div>
+
+  <!-- CALCULATOR -->
+  <section id="calculator">
+    <div class="calc-wrap">
+
+      <!-- INPUT COLUMN -->
+      <div>
+        <label class="field-label" for="formula">Dice Formula</label>
+        <input id="formula" class="formula-input" type="text" value="3d6+2" autocomplete="off" spellcheck="false">
+        <p class="formula-hint">Supports terms like <strong style="color:var(--mist)">2d8</strong>, flat modifiers, and multiple dice groups added or subtracted &mdash; e.g. <strong style="color:var(--mist)">1d20+1d4-2</strong>.</p>
+        <div class="error-msg" id="error"></div>
+
+        <div class="presets">
+          <button class="preset-btn" data-formula="1d20">1d20</button>
+          <button class="preset-btn" data-formula="3d6">3d6</button>
+          <button class="preset-btn" data-formula="2d6+2">2d6+2</button>
+          <button class="preset-btn" data-formula="4d6-1">4d6-1</button>
+          <button class="preset-btn" data-formula="1d20+1d4">1d20+1d4</button>
+          <button class="preset-btn" data-formula="8d6">8d6</button>
+        </div>
+
+        <div class="target-row">
+          <label class="field-label" for="target">Chance of rolling &ge; a target</label>
+          <input id="target" class="target-input" type="number" value="15">
+          <div class="target-result" id="target-result"></div>
+        </div>
+      </div>
+
+      <!-- RESULTS COLUMN -->
+      <div>
+        <div class="stat-grid" id="stat-grid"></div>
+        <div class="chart-area" id="chart-area"></div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <span class="footer-word">First Measure Studios</span>
+    <span class="footer-meta">Harrison, Arkansas &middot; Est. 2024</span>
+  </footer>
+
+  <script>
+    // ---------- Formula parsing ----------
+    // Grammar: term (('+'|'-') term)*   where term = NdM | N
+    function parseFormula(raw) {
+      const cleaned = raw.replace(/\s+/g, '').toLowerCase();
+      if (!cleaned) throw new Error('Enter a formula.');
+      if (!/^[0-9d+\-]+$/.test(cleaned)) throw new Error('Only digits, "d", "+", and "-" are allowed.');
+
+      // split into signed tokens, keeping the sign attached
+      const tokens = cleaned.match(/[+-]?[^+-]+/g);
+      if (!tokens) throw new Error('Could not read that formula.');
+
+      const terms = [];
+      for (const tok of tokens) {
+        let sign = 1;
+        let body = tok;
+        if (body[0] === '+') { body = body.slice(1); }
+        else if (body[0] === '-') { sign = -1; body = body.slice(1); }
+
+        if (body.includes('d')) {
+          const [nStr, mStr] = body.split('d');
+          const n = nStr === '' ? 1 : parseInt(nStr, 10);
+          const m = parseInt(mStr, 10);
+          if (!n || !m || n < 1 || m < 2) throw new Error('Dice terms need a die count and at least a d2.');
+          if (n > 100) throw new Error('Max 100 dice per term.');
+          if (m > 1000) throw new Error('Max 1000 sides per die.');
+          if (n * m > 20000) throw new Error('That formula is too large to compute exactly.');
+          terms.push({ type: 'dice', sign, n, m });
+        } else {
+          const val = parseInt(body, 10);
+          if (Number.isNaN(val)) throw new Error('Could not read "' + tok + '".');
+          terms.push({ type: 'flat', sign, val });
+        }
+      }
+      return terms;
+    }
+
+    // Distribution as an object: { minTotal, counts: [ ... ] } where counts[i] = ways to roll (minTotal + i)
+    function singleDieDist(m) {
+      return { min: 1, counts: new Array(m).fill(1) };
+    }
+
+    function convolve(a, b) {
+      const min = a.min + b.min;
+      const len = (a.counts.length - 1) + (b.counts.length - 1) + 1;
+      const counts = new Array(len).fill(0);
+      for (let i = 0; i < a.counts.length; i++) {
+        if (a.counts[i] === 0) continue;
+        for (let j = 0; j < b.counts.length; j++) {
+          counts[i + j] += a.counts[i] * b.counts[j];
+        }
+      }
+      return { min, counts };
+    }
+
+    function shiftDist(dist, amount) {
+      return { min: dist.min + amount, counts: dist.counts.slice() };
+    }
+
+    function negateDist(dist) {
+      // reverse and negate the total range: values become -(min..max)
+      const max = dist.min + dist.counts.length - 1;
+      return { min: -max, counts: dist.counts.slice().reverse() };
+    }
+
+    function buildDistribution(terms) {
+      let dist = { min: 0, counts: [1] }; // represents the constant 0
+      for (const term of terms) {
+        let termDist;
+        if (term.type === 'flat') {
+          termDist = { min: term.val, counts: [1] };
+        } else {
+          let d = singleDieDist(term.m);
+          for (let i = 1; i < term.n; i++) {
+            d = convolve(d, singleDieDist(term.m));
+          }
+          termDist = d;
+        }
+        if (term.sign === -1) termDist = negateDist(termDist);
+        dist = convolve(dist, termDist);
+      }
+      return dist;
+    }
+
+    function distStats(dist) {
+      let total = 0;
+      for (const c of dist.counts) total += c;
+      let mean = 0;
+      for (let i = 0; i < dist.counts.length; i++) {
+        mean += (dist.min + i) * dist.counts[i];
+      }
+      mean /= total;
+      let variance = 0;
+      for (let i = 0; i < dist.counts.length; i++) {
+        variance += dist.counts[i] * Math.pow((dist.min + i) - mean, 2);
+      }
+      variance /= total;
+      const stdDev = Math.sqrt(variance);
+      const max = dist.min + dist.counts.length - 1;
+      return { total, mean, stdDev, min: dist.min, max };
+    }
+
+    function chanceAtLeast(dist, target, total) {
+      let ways = 0;
+      for (let i = 0; i < dist.counts.length; i++) {
+        const value = dist.min + i;
+        if (value >= target) ways += dist.counts[i];
+      }
+      return ways / total;
+    }
+
+    // ---------- Rendering ----------
+    function renderStats(stats) {
+      const grid = document.getElementById('stat-grid');
+      grid.innerHTML = `
+        <div class="stat-cell"><span class="stat-num">${stats.mean.toFixed(2)}</span><span class="stat-label">Average</span></div>
+        <div class="stat-cell"><span class="stat-num">${stats.min}&ndash;${stats.max}</span><span class="stat-label">Range</span></div>
+        <div class="stat-cell"><span class="stat-num">&plusmn;${stats.stdDev.toFixed(2)}</span><span class="stat-label">Std. Dev.</span></div>
+        <div class="stat-cell"><span class="stat-num">${stats.total.toLocaleString()}</span><span class="stat-label">Outcomes</span></div>
+      `;
+    }
+
+    function renderChart(dist, total) {
+      const area = document.getElementById('chart-area');
+      const n = dist.counts.length;
+      const w = 900;
+      const barGap = 3;
+      const barW = Math.max(2, (w - (n - 1) * barGap) / n);
+      const chartH = 320;
+      const maxCount = Math.max(...dist.counts);
+      const showLabels = n <= 40;
+
+      let bars = '';
+      for (let i = 0; i < n; i++) {
+        const value = dist.min + i;
+        const count = dist.counts[i];
+        const pct = (count / total * 100);
+        const h = maxCount > 0 ? (count / maxCount) * (chartH - 40) : 0;
+        const x = i * (barW + barGap);
+        const y = chartH - h;
+        bars += `<rect class="bar" x="${x.toFixed(2)}" y="${y.toFixed(2)}" width="${barW.toFixed(2)}" height="${h.toFixed(2)}"><title>${value}: ${pct.toFixed(2)}%</title></rect>`;
+        if (showLabels) {
+          bars += `<text class="bar-label" x="${(x + barW / 2).toFixed(2)}" y="${chartH + 18}" font-size="11" text-anchor="middle">${value}</text>`;
+        }
+      }
+
+      const svgW = n * (barW + barGap);
+      area.innerHTML = `<svg viewBox="0 0 ${svgW.toFixed(2)} ${chartH + 32}" preserveAspectRatio="none">${bars}</svg>`;
+    }
+
+    function update() {
+      const formulaInput = document.getElementById('formula');
+      const errorEl = document.getElementById('error');
+      const targetInput = document.getElementById('target');
+      const targetResult = document.getElementById('target-result');
+
+      errorEl.textContent = '';
+
+      let terms;
+      try {
+        terms = parseFormula(formulaInput.value);
+      } catch (e) {
+        errorEl.textContent = e.message;
+        return;
+      }
+
+      const dist = buildDistribution(terms);
+      const stats = distStats(dist);
+      renderStats(stats);
+      renderChart(dist, stats.total);
+
+      const target = parseInt(targetInput.value, 10);
+      if (!Number.isNaN(target)) {
+        const chance = chanceAtLeast(dist, target, stats.total);
+        targetResult.innerHTML = `<span class="amt">${(chance * 100).toFixed(1)}%</span> chance to roll ${target} or higher`;
+      } else {
+        targetResult.textContent = '';
+      }
+    }
+
+    document.getElementById('formula').addEventListener('input', update);
+    document.getElementById('target').addEventListener('input', update);
+    document.querySelectorAll('.preset-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.getElementById('formula').value = btn.dataset.formula;
+        update();
+      });
+    });
+
+    update();
+  </script>
+
+</body>
+</html>
