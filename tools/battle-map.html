@@ -255,10 +255,11 @@
     document.getElementById('add-token').addEventListener('click', () => {
       const label = prompt('Token label (e.g. initials or a number):', String(tokenCounter));
       if (label === null) return;
+      const jitter = () => (Math.random() - 0.5) * 60;
       tokens.push({
         id: 'tok-' + Date.now() + Math.random(),
-        x: view.x + (1000 / view.scale) / 2,
-        y: view.y + (700 / view.scale) / 2,
+        x: view.x + (1000 / view.scale) / 2 + jitter(),
+        y: view.y + (700 / view.scale) / 2 + jitter(),
         label: label.slice(0, 4) || String(tokenCounter),
         color: selectedColor
       });

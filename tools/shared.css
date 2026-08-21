@@ -250,8 +250,9 @@ footer {
 
 /* ===================== RESPONSIVE ===================== */
 @media (max-width: 768px) {
-  nav { padding: 16px 24px; }
-  .nav-links { gap: 16px; }
+  nav { padding: 16px 24px; flex-wrap: wrap; row-gap: 10px; }
+  .nav-wordmark { white-space: nowrap; }
+  .nav-links { gap: 16px; flex-wrap: wrap; }
   .nav-links a.nav-cta { display: none; }
   .page-header { padding: 128px 24px 56px; }
   section { padding: 72px 24px; }
