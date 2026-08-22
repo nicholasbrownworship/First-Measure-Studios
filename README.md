@@ -27,7 +27,8 @@ Independent game development studio site for First Measure Studios, based in Har
     ├── npc-quest-generator.html  NPC & quest hook generator
     ├── hex-map.html              Procedural hex map generator
     ├── logic-puzzles.html        Logic puzzle generator (mystery deduction + knights & knaves)
-    └── session-recorder.html     Browser-based mic/camera backup recorder
+    ├── session-recorder.html     Browser-based mic/camera backup recorder
+    └── campaign-notes.html       Persistent NPC/location/plot-thread tracker
 ```
 
 No build step, no dependencies, no backend. Every page is plain HTML/CSS/JS and can be opened directly or served as static files.
@@ -47,12 +48,13 @@ Showcase/archive page for actual play recordings from the tabletop table (multit
 
 - **Episodes** — data-driven from an `EPISODES` array at the bottom of `show.html`. Empty by default (shows an honest "in production" state). To publish an episode, add an entry to that array — fully documented inline with an example. Supports two hosting paths: a YouTube embed (`type: 'youtube'`, give it a `youtubeId`) or a self-hosted file (`type: 'audio'`/`'video'`, give it a `mediaUrl` pointing into `/media`). Newest entries go at the top; there's no backend, so "publishing" just means editing this array and pushing.
 - **Shows** — a repeatable list of the shows themselves (currently the Issylra campaign and Pilated Pals, plus the upcoming public series), each its own `.show-entry` block with a system tag, status badge, and fact list. Copy an existing block to add a new show.
+- **Discussion** — a comments section built for [giscus](https://giscus.app) (GitHub Discussions-backed, no server needed). Ships with an honest placeholder until setup is finished. To activate: enable Discussions in the repo's Settings, install the giscus GitHub App, then generate the config at giscus.app and drop the resulting `<script>` tag into the `#giscus-comments` div (full steps are in an HTML comment right above it in `show.html`).
 
 Deliberately avoids referencing Dungeons & Dragons by name or branding in the public copy — the planned public series uses an original FFG Star Wars-based setting instead, to sidestep WotC's IP enforcement stance.
 
 ## DM Toolkit (`/tools`)
 
-A set of small, client-side utilities for running and building tabletop games, linked from the "Tools" tab in the main nav. All 10 are live:
+A set of small, client-side utilities for running and building tabletop games, linked from the "Tools" tab in the main nav. All 11 are live:
 
 | Tool | What it does |
 |---|---|
@@ -66,6 +68,7 @@ A set of small, client-side utilities for running and building tabletop games, l
 | Procedural Hex Map | Clustered-terrain hex grid generation with adjustable radius and reroll. |
 | Logic Puzzles | Mystery deduction grids and knights & knaves riddles — each puzzle is run through a backtracking solver before being shown, guaranteeing a unique, deducible solution rather than randomly-scattered clues. |
 | Session Recorder | Browser-based mic/camera backup recorder using MediaRecorder — live input level meter, device selection, audio-only or audio+video modes. Records and downloads entirely client-side; nothing is uploaded. |
+| Campaign Notes | Persistent, non-random tracker for an ongoing campaign — NPCs (with a status field), locations, and plot threads (open/resolved), across multiple campaigns. The one tool in the kit that only holds what you put into it. |
 
 Shared styling for all tool pages lives in `tools/shared.css` (nav, footer, page-header, section, status-badge, and fade-up scroll-reveal styles) so individual tool pages only need to define their own page-specific CSS.
 
