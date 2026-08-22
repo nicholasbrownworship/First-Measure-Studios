@@ -116,6 +116,40 @@
     }
     .episode-empty .status-active { margin-bottom: 20px; justify-content: center; display: inline-flex; }
 
+    /* Episode cards */
+    .episode-list { display: flex; flex-direction: column; gap: 1px; background: var(--rule); border: 0.5px solid var(--rule); }
+    .episode-card {
+      background: var(--ink);
+      padding: 40px;
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      gap: 36px;
+      align-items: start;
+    }
+    @media (max-width: 800px) { .episode-card { grid-template-columns: 1fr; } }
+
+    .episode-media { width: 100%; }
+    .episode-media .embed-frame {
+      position: relative;
+      width: 100%;
+      padding-top: 56.25%; /* 16:9 */
+      background: var(--smoke);
+      border: 0.5px solid var(--rule);
+    }
+    .episode-media .embed-frame iframe {
+      position: absolute; inset: 0; width: 100%; height: 100%; border: 0;
+    }
+    .episode-media audio, .episode-media video { width: 100%; display: block; }
+
+    .episode-meta-row { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
+    .episode-show-tag {
+      font-family: var(--mono); font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--amber-dim); border: 0.5px solid var(--amber-dim); padding: 3px 8px; border-radius: 2px;
+    }
+    .episode-date { font-family: var(--mono); font-size: 10px; letter-spacing: 0.08em; color: var(--ash); text-transform: uppercase; }
+    .episode-title { font-family: var(--serif); font-size: 24px; font-weight: 400; color: var(--paper); margin-bottom: 12px; }
+    .episode-desc { font-size: 14px; line-height: 1.7; color: var(--mist); }
+
     /* Series teaser */
     .teaser-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: start; }
     @media (max-width: 900px) { .teaser-grid { grid-template-columns: 1fr; gap: 40px; } }
@@ -185,10 +219,7 @@
       <div class="section-rule"></div>
     </div>
 
-    <div class="episode-empty fade-up">
-      <span class="project-status status-active"><span class="status-dot"></span>In Production</span>
-      <p>The recording setup is being built and tested at the table before anything goes public &mdash; multitrack mic isolation, in-person capture, real edit passes. Nothing's posted yet. Check back, or see the series below.</p>
-    </div>
+    <div id="episode-list-wrap"></div>
   </section>
 
   <section id="shows">
@@ -198,24 +229,46 @@
       <div class="section-rule"></div>
     </div>
 
+    <!-- Issylra Campaign -->
+    <div class="show-entry">
+      <div class="teaser-grid">
+        <div class="fade-up">
+          <div class="show-meta-row">
+            <span class="show-system-tag">Homebrew Setting</span>
+            <span class="project-status status-active"><span class="status-dot"></span>Recording</span>
+          </div>
+          <h3 class="teaser-title">The <em>Issylra</em> Campaign</h3>
+          <div class="teaser-body">
+            <p>The weekly home game, and the one currently being used to shake out the recording setup itself &mdash; mic placement, multitrack isolation, the whole pipeline &mdash; before anything more ambitious gets built around it. No official title yet; one's coming once the table settles on it.</p>
+          </div>
+        </div>
+
+        <div class="fact-list fade-up delay-1">
+          <div class="fact-row"><span class="fact-label">Format</span><span class="fact-value">Tabletop RPG, actual play</span></div>
+          <div class="fact-row"><span class="fact-label">Title</span><span class="fact-value">TBA</span></div>
+          <div class="fact-row"><span class="fact-label">Status</span><span class="fact-value">Recording (proof of concept)</span></div>
+        </div>
+      </div>
+    </div>
+
     <!-- Pilated Pals -->
     <div class="show-entry">
       <div class="teaser-grid">
         <div class="fade-up">
           <div class="show-meta-row">
             <span class="show-system-tag">Monster of the Week</span>
-            <span class="project-status status-active"><span class="status-dot"></span>Recording</span>
+            <span class="project-status status-active"><span class="status-dot"></span>Weekly Game</span>
           </div>
           <h3 class="teaser-title">Pilated <em>Pals</em></h3>
           <div class="teaser-body">
-            <p>The weekly home game, and the one currently being used to shake out the recording setup itself &mdash; mic placement, multitrack isolation, the whole pipeline &mdash; before anything more ambitious gets built around it.</p>
+            <p>The group's other running game. Not currently the one being recorded, but on the table as a future candidate once the pipeline's proven out.</p>
           </div>
         </div>
 
         <div class="fact-list fade-up delay-1">
           <div class="fact-row"><span class="fact-label">Format</span><span class="fact-value">Tabletop RPG, actual play</span></div>
           <div class="fact-row"><span class="fact-label">System</span><span class="fact-value">Monster of the Week</span></div>
-          <div class="fact-row"><span class="fact-label">Status</span><span class="fact-value">Recording (proof of concept)</span></div>
+          <div class="fact-row"><span class="fact-label">Status</span><span class="fact-value">Ongoing, not yet recorded</span></div>
         </div>
       </div>
     </div>
@@ -253,6 +306,82 @@
   </footer>
 
   <script>
+    // ============================================================
+    // EPISODES — publish an episode by adding one entry here.
+    //
+    // Two ways to host the media:
+    //   1. YouTube (recommended for video): set type: 'youtube' and
+    //      youtubeId to the video ID (the part after "v=" in the URL).
+    //   2. Self-hosted file (fine for audio, or short clips): drop the
+    //      file in the /media folder in this repo, set type to 'audio'
+    //      or 'video', and mediaUrl to 'media/your-file.mp3'.
+    //
+    // Newest episodes should go at the TOP of this array — the list
+    // renders in the order given, no sorting happens automatically.
+    //
+    // Example entry:
+    // {
+    //   show: 'The Issylra Campaign',
+    //   title: 'Episode 1: Into the Reach',
+    //   date: '2026-09-05',
+    //   description: 'The party sets out from Deska\'s Landing and things immediately go sideways.',
+    //   type: 'youtube',
+    //   youtubeId: 'dQw4w9WgXcQ'
+    // }
+    // ============================================================
+    const EPISODES = [
+      // (empty — nothing published yet)
+    ];
+
+    function renderEpisodeMedia(ep) {
+      if (ep.type === 'youtube') {
+        return `<div class="embed-frame"><iframe src="https://www.youtube-nocookie.com/embed/${ep.youtubeId}" title="${ep.title}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>`;
+      }
+      if (ep.type === 'video') {
+        return `<video controls src="${ep.mediaUrl}"></video>`;
+      }
+      if (ep.type === 'audio') {
+        return `<audio controls src="${ep.mediaUrl}"></audio>`;
+      }
+      return '';
+    }
+
+    function formatEpisodeDate(iso) {
+      const d = new Date(iso + 'T00:00:00');
+      if (isNaN(d)) return iso;
+      return d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    }
+
+    function renderEpisodes() {
+      const wrap = document.getElementById('episode-list-wrap');
+
+      if (EPISODES.length === 0) {
+        wrap.innerHTML = `
+          <div class="episode-empty fade-up">
+            <span class="project-status status-active"><span class="status-dot"></span>In Production</span>
+            <p>The recording setup is being built and tested at the table before anything goes public &mdash; multitrack mic isolation, in-person capture, real edit passes. Nothing's posted yet. Check back, or see the shows below.</p>
+          </div>
+        `;
+        return;
+      }
+
+      wrap.innerHTML = `<div class="episode-list">` + EPISODES.map(ep => `
+        <div class="episode-card">
+          <div class="episode-media">${renderEpisodeMedia(ep)}</div>
+          <div>
+            <div class="episode-meta-row">
+              <span class="episode-show-tag">${ep.show}</span>
+              <span class="episode-date">${formatEpisodeDate(ep.date)}</span>
+            </div>
+            <h3 class="episode-title">${ep.title}</h3>
+            <p class="episode-desc">${ep.description || ''}</p>
+          </div>
+        </div>
+      `).join('') + `</div>`;
+    }
+
+    renderEpisodes();
+
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
     }, { threshold: 0.1 });
