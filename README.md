@@ -10,6 +10,7 @@ Independent game development studio site for First Measure Studios, based in Har
 /
 ├── index.html          Main site — hero, projects grid, studio info, contact
 ├── privacy.html         Privacy page
+├── show.html             Sessions page — actual play showcase/episode archive
 ├── favicon.ico           Multi-resolution favicon
 ├── site.webmanifest      Android/PWA icon manifest
 ├── CNAME                 Custom domain config for GitHub Pages
@@ -25,7 +26,8 @@ Independent game development studio site for First Measure Studios, based in Har
     ├── name-generator.html       Name generator
     ├── npc-quest-generator.html  NPC & quest hook generator
     ├── hex-map.html              Procedural hex map generator
-    └── logic-puzzles.html        Logic puzzle generator (mystery deduction + knights & knaves)
+    ├── logic-puzzles.html        Logic puzzle generator (mystery deduction + knights & knaves)
+    └── session-recorder.html     Browser-based mic/camera backup recorder
 ```
 
 No build step, no dependencies, no backend. Every page is plain HTML/CSS/JS and can be opened directly or served as static files.
@@ -39,9 +41,15 @@ Single-page layout covering:
 
 Visual identity: dark editorial aesthetic (`--ink` background, `--amber` accent), Cormorant Garamond (serif/display), Barlow Condensed (body/UI), and DM Mono (labels/data), with a subtle grain overlay and hairline rules throughout.
 
+## Sessions (`show.html`)
+
+Showcase/archive page for actual play recordings from the tabletop table (multitrack in-person audio, edited before posting). Currently shows an honest "in production, nothing posted yet" empty state for the episode archive, plus a teaser section for the upcoming series with its working title, ship, captain, and starting location.
+
+Deliberately avoids referencing Dungeons & Dragons by name or branding in the public copy — the planned public series uses an original FFG Star Wars-based setting instead, to sidestep WotC's IP enforcement stance. When real episodes exist, add them as cards in the `#episodes` section, replacing the empty state.
+
 ## DM Toolkit (`/tools`)
 
-A set of small, client-side utilities for running and building tabletop games, linked from the "Tools" tab in the main nav. All 9 are live:
+A set of small, client-side utilities for running and building tabletop games, linked from the "Tools" tab in the main nav. All 10 are live:
 
 | Tool | What it does |
 |---|---|
@@ -54,6 +62,7 @@ A set of small, client-side utilities for running and building tabletop games, l
 | NPC & Quest Hook Generator | Tabbed roller for a quick NPC (role/trait/want/secret) or a quest hook with a built-in twist. |
 | Procedural Hex Map | Clustered-terrain hex grid generation with adjustable radius and reroll. |
 | Logic Puzzles | Mystery deduction grids and knights & knaves riddles — each puzzle is run through a backtracking solver before being shown, guaranteeing a unique, deducible solution rather than randomly-scattered clues. |
+| Session Recorder | Browser-based mic/camera backup recorder using MediaRecorder — live input level meter, device selection, audio-only or audio+video modes. Records and downloads entirely client-side; nothing is uploaded. |
 
 Shared styling for all tool pages lives in `tools/shared.css` (nav, footer, page-header, section, status-badge, and fade-up scroll-reveal styles) so individual tool pages only need to define their own page-specific CSS.
 
@@ -61,7 +70,7 @@ Shared styling for all tool pages lives in `tools/shared.css` (nav, footer, page
 
 1. Copy the `<head>` / nav / footer / fade-up scaffolding from an existing tool page (e.g. `dice-calculator.html`) and link `shared.css`.
 2. Build the tool in a single self-contained HTML file — no external JS dependencies beyond Google Fonts.
-3. Add a card for it to `tools/index.html`'s grid (currently a 3-column grid, sized for 9 — adjust the column count if the total changes, and prefer a number of tools that divides evenly to avoid an empty trailing cell).
+3. Add a card for it to `tools/index.html`'s grid (bordered individual cards with real gaps — any tool count works cleanly now, no column-math needed).
 4. Link it from the Projects section on the main site if it's substantial enough to stand on its own.
 
 ## Deployment
