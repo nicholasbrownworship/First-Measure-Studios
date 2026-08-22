@@ -257,20 +257,20 @@
     .projects-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 1px;
-      background: var(--rule);
-      border: 0.5px solid var(--rule);
+      gap: 16px;
+      background: transparent;
     }
 
     .project-card {
       background: var(--ink);
+      border: 0.5px solid var(--rule);
       padding: 40px;
       position: relative;
       overflow: hidden;
-      transition: background 0.3s;
+      transition: background 0.3s, border-color 0.3s;
     }
 
-    .project-card:hover { background: var(--ash); }
+    .project-card:hover { background: var(--ash); border-color: var(--amber-dim); }
 
     .project-card.featured {
       grid-column: span 2;
@@ -608,6 +608,7 @@
       <li><a href="#projects">Projects</a></li>
       <li><a href="#studio">Studio</a></li>
       <li><a href="tools/index.html">Tools</a></li>
+      <li><a href="show.html">Sessions</a></li>
       <li><a href="#contact">Contact</a></li>
       <li><a href="https://nicholasbrownworship.github.io/JediTPS/" target="_blank" rel="noopener" class="nav-cta">Jedi TPS &nearr;</a></li>
     </ul>
@@ -627,7 +628,7 @@
       </div>
       <div class="stat-divider"></div>
       <div class="hero-stat">
-        <span class="stat-num">13</span>
+        <span class="stat-num">14</span>
         <span class="stat-label">Projects &amp; Works</span>
       </div>
       <div class="stat-divider"></div>
@@ -833,6 +834,22 @@
             Ongoing
           </span>
           <a href="tools/index.html" class="project-site-link">View Toolkit &nearr;</a>
+        </div>
+      </div>
+
+      <!-- Sessions / Actual Play -->
+      <div class="project-card fade-up">
+        <p class="project-tag">Actual Play</p>
+        <h3 class="project-name">Sessions <em>&amp; Play</em></h3>
+        <p class="project-desc">Multitrack in-person recordings from the table. Currently in production &mdash; testing the recording pipeline ahead of an upcoming original series, <em>No Names on the Manifest</em>.</p>
+        <span class="project-engine-badge">Multitrack Audio &middot; Video</span>
+        <br>
+        <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+          <span class="project-status status-active">
+            <span class="status-dot"></span>
+            In Production
+          </span>
+          <a href="show.html" class="project-site-link">View Sessions &nearr;</a>
         </div>
       </div>
 
