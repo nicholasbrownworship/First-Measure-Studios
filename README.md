@@ -43,9 +43,12 @@ Visual identity: dark editorial aesthetic (`--ink` background, `--amber` accent)
 
 ## Sessions (`show.html`)
 
-Showcase/archive page for actual play recordings from the tabletop table (multitrack in-person audio, edited before posting). Currently shows an honest "in production, nothing posted yet" empty state for the episode archive, plus a teaser section for the upcoming series with its working title, ship, captain, and starting location.
+Showcase/archive page for actual play recordings from the tabletop table (multitrack in-person audio, edited before posting). Two sections:
 
-Deliberately avoids referencing Dungeons & Dragons by name or branding in the public copy — the planned public series uses an original FFG Star Wars-based setting instead, to sidestep WotC's IP enforcement stance. When real episodes exist, add them as cards in the `#episodes` section, replacing the empty state.
+- **Episodes** — data-driven from an `EPISODES` array at the bottom of `show.html`. Empty by default (shows an honest "in production" state). To publish an episode, add an entry to that array — fully documented inline with an example. Supports two hosting paths: a YouTube embed (`type: 'youtube'`, give it a `youtubeId`) or a self-hosted file (`type: 'audio'`/`'video'`, give it a `mediaUrl` pointing into `/media`). Newest entries go at the top; there's no backend, so "publishing" just means editing this array and pushing.
+- **Shows** — a repeatable list of the shows themselves (currently the Issylra campaign and Pilated Pals, plus the upcoming public series), each its own `.show-entry` block with a system tag, status badge, and fact list. Copy an existing block to add a new show.
+
+Deliberately avoids referencing Dungeons & Dragons by name or branding in the public copy — the planned public series uses an original FFG Star Wars-based setting instead, to sidestep WotC's IP enforcement stance.
 
 ## DM Toolkit (`/tools`)
 
