@@ -130,6 +130,16 @@
     .fact-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--amber-dim); flex-shrink: 0; }
     .fact-value { font-size: 15px; color: var(--paper); text-align: right; }
 
+    .show-entry { margin-bottom: 72px; }
+    .show-entry:last-child { margin-bottom: 0; }
+    .show-entry + .show-entry { padding-top: 72px; border-top: 0.5px solid var(--rule); }
+
+    .show-meta-row { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; flex-wrap: wrap; }
+    .show-system-tag {
+      font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--amber); border: 0.5px solid var(--amber-dim); padding: 5px 12px; border-radius: 2px;
+    }
+
     footer { padding: 36px 48px; display: flex; align-items: center; justify-content: space-between; }
     .footer-word { font-family: var(--cond); font-weight: 500; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--mist); }
     .footer-meta { font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; color: var(--ash); text-transform: uppercase; }
@@ -181,29 +191,58 @@
     </div>
   </section>
 
-  <section id="series">
+  <section id="shows">
     <div class="section-header">
       <span class="section-num">02</span>
-      <h2 class="section-title">Up Next</h2>
+      <h2 class="section-title">Shows</h2>
       <div class="section-rule"></div>
     </div>
 
-    <div class="teaser-grid">
-      <div class="fade-up">
-        <h3 class="teaser-title"><em>No Names</em> on the Manifest</h3>
-        <div class="teaser-body">
-          <p>A crew thrown together by circumstance, not shared history, running cargo through occupied space during a period of surveillance and moral compromise. Nobody here signed up to be a hero &mdash; canon events happen off-screen, at the edges of the frame, while this crew just tries to keep flying.</p>
-          <p>Family-friendly by design, built for a group that plays together weekly. Recording and editing come first; a public release is the bonus outcome, not the goal.</p>
+    <!-- Pilated Pals -->
+    <div class="show-entry">
+      <div class="teaser-grid">
+        <div class="fade-up">
+          <div class="show-meta-row">
+            <span class="show-system-tag">Monster of the Week</span>
+            <span class="project-status status-active"><span class="status-dot"></span>Recording</span>
+          </div>
+          <h3 class="teaser-title">Pilated <em>Pals</em></h3>
+          <div class="teaser-body">
+            <p>The weekly home game, and the one currently being used to shake out the recording setup itself &mdash; mic placement, multitrack isolation, the whole pipeline &mdash; before anything more ambitious gets built around it.</p>
+          </div>
+        </div>
+
+        <div class="fact-list fade-up delay-1">
+          <div class="fact-row"><span class="fact-label">Format</span><span class="fact-value">Tabletop RPG, actual play</span></div>
+          <div class="fact-row"><span class="fact-label">System</span><span class="fact-value">Monster of the Week</span></div>
+          <div class="fact-row"><span class="fact-label">Status</span><span class="fact-value">Recording (proof of concept)</span></div>
         </div>
       </div>
+    </div>
 
-      <div class="fact-list fade-up delay-1">
-        <div class="fact-row"><span class="fact-label">Format</span><span class="fact-value">Tabletop RPG, actual play</span></div>
-        <div class="fact-row"><span class="fact-label">Table</span><span class="fact-value">4 players + DM</span></div>
-        <div class="fact-row"><span class="fact-label">Ship</span><span class="fact-value">The Long Grace</span></div>
-        <div class="fact-row"><span class="fact-label">Captain</span><span class="fact-value">Mireth Sona</span></div>
-        <div class="fact-row"><span class="fact-label">Starting Point</span><span class="fact-value">Deska's Landing</span></div>
-        <div class="fact-row"><span class="fact-label">Status</span><span class="fact-value">In development</span></div>
+    <!-- No Names on the Manifest -->
+    <div class="show-entry">
+      <div class="teaser-grid">
+        <div class="fade-up">
+          <div class="show-meta-row">
+            <span class="show-system-tag">Original System</span>
+            <span class="project-status status-active"><span class="status-dot"></span>In Development</span>
+          </div>
+          <h3 class="teaser-title"><em>No Names</em> on the Manifest</h3>
+          <div class="teaser-body">
+            <p>A crew thrown together by circumstance, not shared history, running cargo through occupied space during a period of surveillance and moral compromise. Nobody here signed up to be a hero &mdash; canon events happen off-screen, at the edges of the frame, while this crew just tries to keep flying.</p>
+            <p>Family-friendly by design, built for a group that plays together weekly. Recording and editing come first; a public release is the bonus outcome, not the goal.</p>
+          </div>
+        </div>
+
+        <div class="fact-list fade-up delay-1">
+          <div class="fact-row"><span class="fact-label">Format</span><span class="fact-value">Tabletop RPG, actual play</span></div>
+          <div class="fact-row"><span class="fact-label">Table</span><span class="fact-value">4 players + DM</span></div>
+          <div class="fact-row"><span class="fact-label">Ship</span><span class="fact-value">The Long Grace</span></div>
+          <div class="fact-row"><span class="fact-label">Captain</span><span class="fact-value">Mireth Sona</span></div>
+          <div class="fact-row"><span class="fact-label">Starting Point</span><span class="fact-value">Deska's Landing</span></div>
+          <div class="fact-row"><span class="fact-label">Status</span><span class="fact-value">In development</span></div>
+        </div>
       </div>
     </div>
   </section>
