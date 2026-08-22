@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Campaign notes — a persistent tracker for NPCs, locations, and plot threads across an ongoing campaign.">
+  <link rel="icon" href="../favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" sizes="16x16" href="../assets/favicon-16x16.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="../assets/favicon-32x32.png">
+  <link rel="apple-touch-icon" href="../assets/apple-touch-icon.png">
+  <link rel="manifest" href="../site.webmanifest">
+  <meta name="theme-color" content="#0d0b09">
+
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Campaign Notes — First Measure Studios">
+  <meta property="og:description" content="Campaign notes — a persistent tracker for NPCs, locations, and plot threads across an ongoing campaign.">
+  <meta property="og:image" content="https://firstmeasurestudio.store/assets/og-image.png">
+  <meta property="og:url" content="https://firstmeasurestudio.store/tools/campaign-notes.html">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Campaign Notes — First Measure Studios">
+  <meta name="twitter:description" content="Campaign notes — a persistent tracker for NPCs, locations, and plot threads across an ongoing campaign.">
+  <meta name="twitter:image" content="https://firstmeasurestudio.store/assets/og-image.png">
+
+  <title>Campaign Notes — First Measure Studios</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Mono:wght@300;400;500&family=Barlow+Condensed:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="shared.css">
+  <style>
+    .layout { display: grid; grid-template-columns: 260px 1fr; gap: 48px; }
+    @media (max-width: 900px) { .layout { grid-template-columns: 1fr; gap: 32px; } }
+
+    .campaign-list { display: flex; flex-direction: column; gap: 1px; background: var(--rule); border: 0.5px solid var(--rule); margin-bottom: 16px; }
+    .campaign-item {
+      background: var(--ink); padding: 14px 16px; cursor: pointer;
+      font-family: var(--mono); font-size: 12px; letter-spacing: 0.03em; color: var(--mist);
+      display: flex; justify-content: space-between; align-items: center;
+      transition: background 0.2s, color 0.2s;
+    }
+    .campaign-item:hover { background: var(--ash); color: var(--paper); }
+    .campaign-item.is-selected { background: var(--ash); color: var(--amber-light); }
+    .campaign-item .count { color: var(--ash); font-size: 10px; }
+
+    .btn {
+      font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
+      padding: 10px 16px; border-radius: 2px; cursor: pointer;
+      border: 0.5px solid var(--amber-dim); background: transparent; color: var(--amber);
+      transition: color 0.2s, background 0.2s, border-color 0.2s;
+    }
+    .btn:hover { color: var(--ink); background: var(--amber); border-color: var(--amber); }
+    .btn-ghost { border-color: var(--rule); color: var(--mist); }
+    .btn-ghost:hover { color: var(--paper); background: var(--ash); border-color: var(--rule); }
+    .btn-block { width: 100%; }
+    .btn-sm { padding: 7px 12px; font-size: 10px; }
+
+    .campaign-name-input {
+      width: 100%; background: var(--smoke); border: 0.5px solid var(--rule); color: var(--paper);
+      font-family: var(--serif); font-size: 22px; padding: 10px 14px; border-radius: 2px; margin-bottom: 24px;
+    }
+    .campaign-name-input:focus { outline: none; border-color: var(--amber); }
+
+    .tabs { display: flex; gap: 1px; background: var(--rule); border: 0.5px solid var(--rule); margin-bottom: 28px; }
+    .tab {
+      flex: 1; text-align: center; background: var(--ink); padding: 14px;
+      font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--mist); cursor: pointer; transition: color 0.2s, background 0.2s;
+    }
+    .tab.is-active { color: var(--amber-light); background: var(--ash); }
+    .tab:hover { color: var(--amber-light); }
+    .tab .tab-count { color: var(--ash); margin-left: 6px; }
+
+    .entry-list { display: flex; flex-direction: column; gap: 1px; background: var(--rule); border: 0.5px solid var(--rule); margin-bottom: 20px; }
+    .entry-card { background: var(--ink); padding: 22px 24px; }
+
+    .entry-top-row { display: flex; gap: 12px; margin-bottom: 12px; align-items: center; flex-wrap: wrap; }
+    .entry-name-input {
+      flex: 1; min-width: 160px; background: var(--smoke); border: 0.5px solid var(--rule); color: var(--paper);
+      font-family: var(--cond); font-weight: 500; font-size: 16px; padding: 9px 12px; border-radius: 2px;
+    }
+    .entry-name-input:focus { outline: none; border-color: var(--amber); }
+
+    select.entry-status {
+      background: var(--smoke); border: 0.5px solid var(--rule); color: var(--mist);
+      font-family: var(--mono); font-size: 11px; padding: 9px 10px; border-radius: 2px;
+    }
+    select.entry-status:focus { outline: none; border-color: var(--amber); }
+
+    .thread-status-toggle {
+      font-family: var(--mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+      padding: 8px 14px; border-radius: 2px; cursor: pointer; border: 0.5px solid;
+    }
+    .thread-status-toggle.is-open { color: var(--amber-light); border-color: var(--amber-dim); }
+    .thread-status-toggle.is-resolved { color: var(--mist); border-color: var(--rule); }
+
+    .entry-card.is-resolved .entry-name-input { color: var(--ash); text-decoration: line-through; text-decoration-color: var(--rule); }
+
+    .entry-notes {
+      width: 100%; background: var(--smoke); border: 0.5px solid var(--rule); color: var(--mist);
+      font-family: var(--cond); font-size: 14px; line-height: 1.6; padding: 10px 12px; border-radius: 2px;
+      resize: vertical; min-height: 56px;
+    }
+    .entry-notes:focus { outline: none; border-color: var(--amber); }
+
+    .entry-remove {
+      background: transparent; border: 0.5px solid var(--rule); color: var(--mist);
+      width: 34px; height: 34px; border-radius: 2px; cursor: pointer; flex-shrink: 0;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .entry-remove:hover { color: #c85a0a; border-color: #c85a0a; }
+
+    .empty-state {
+      padding: 60px 28px; text-align: center; font-family: var(--mono); font-size: 12px;
+      color: var(--ash); background: var(--ink); border: 0.5px solid var(--rule); letter-spacing: 0.05em;
+    }
+
+    .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a href="../index.html" class="nav-wordmark">First Measure Studios</a>
+    <ul class="nav-links">
+      <li><a href="../index.html#projects">Projects</a></li>
+      <li><a href="../index.html#studio">Studio</a></li>
+      <li><a href="index.html" class="nav-active">Tools</a></li>
+      <li><a href="../show.html">Sessions</a></li>
+      <li><a href="../index.html#contact">Contact</a></li>
+    </ul>
+  </nav>
+
+  <div class="page-header">
+    <p class="page-eyebrow"><a href="index.html">&larr; DM Toolkit</a> &middot; Session</p>
+    <h1 class="page-title">Campaign <em>Notes</em></h1>
+    <p class="page-sub">A persistent tracker for an ongoing campaign &mdash; NPCs met, places visited, and threads still open. Unlike the generators, nothing here is random; it only holds what you put in it. Saved locally in this browser.</p>
+  </div>
+
+  <section id="notes">
+    <div class="layout">
+
+      <div>
+        <div id="campaign-list" class="campaign-list"></div>
+        <button class="btn btn-block" id="new-campaign">+ New Campaign</button>
+      </div>
+
+      <div id="editor-wrap"></div>
+
+    </div>
+  </section>
+
+  <footer>
+    <span class="footer-word">First Measure Studios</span>
+    <span class="footer-meta">Harrison, Arkansas &middot; Est. 2024</span>
+  </footer>
+
+  <script>
+    const STORAGE_KEY = 'fms-campaign-notes';
+    const NPC_STATUSES = ['Ally', 'Neutral', 'Hostile', 'Unknown', 'Deceased'];
+
+    function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 8); }
+
+    function load() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) return JSON.parse(raw);
+      } catch (e) {}
+      return {
+        campaigns: [
+          {
+            id: 'starter',
+            name: 'New Campaign',
+            npcs: [],
+            locations: [],
+            threads: []
+          }
+        ],
+        selectedId: 'starter',
+        activeTab: 'npcs'
+      };
+    }
+
+    let state = load();
+    function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+
+    function currentCampaign() {
+      return state.campaigns.find(c => c.id === state.selectedId) || null;
+    }
+
+    function renderCampaignList() {
+      const list = document.getElementById('campaign-list');
+      if (state.campaigns.length === 0) { list.innerHTML = ''; return; }
+      list.innerHTML = state.campaigns.map(c => {
+        const total = c.npcs.length + c.locations.length + c.threads.length;
+        return `
+          <div class="campaign-item ${c.id === state.selectedId ? 'is-selected' : ''}" data-id="${c.id}">
+            <span>${c.name || 'Untitled'}</span>
+            <span class="count">${total}</span>
+          </div>
+        `;
+      }).join('');
+
+      list.querySelectorAll('.campaign-item').forEach(el => {
+        el.addEventListener('click', () => {
+          state.selectedId = el.dataset.id;
+          save();
+          render();
+        });
+      });
+    }
+
+    function entryCardHtml(entry, kind) {
+      const isThread = kind === 'threads';
+      const isNpc = kind === 'npcs';
+      const resolvedClass = isThread && entry.status === 'Resolved' ? 'is-resolved' : '';
+
+      let topRowExtra = '';
+      if (isNpc) {
+        topRowExtra = `
+          <select class="entry-status" data-id="${entry.id}" data-field="status">
+            ${NPC_STATUSES.map(s => `<option value="${s}" ${entry.status === s ? 'selected' : ''}>${s}</option>`).join('')}
+          </select>
+        `;
+      } else if (isThread) {
+        const resolved = entry.status === 'Resolved';
+        topRowExtra = `
+          <button class="thread-status-toggle ${resolved ? 'is-resolved' : 'is-open'}" data-id="${entry.id}" data-action="toggle-thread">
+            ${resolved ? 'Resolved' : 'Open'}
+          </button>
+        `;
+      }
+
+      return `
+        <div class="entry-card ${resolvedClass}">
+          <div class="entry-top-row">
+            <input type="text" class="entry-name-input" data-id="${entry.id}" data-field="name" value="${(entry.name || '').replace(/"/g, '&quot;')}" placeholder="${isNpc ? 'Name' : isThread ? 'Thread title' : 'Location name'}">
+            ${topRowExtra}
+            <button class="entry-remove" data-id="${entry.id}" title="Remove">&times;</button>
+          </div>
+          <textarea class="entry-notes" data-id="${entry.id}" data-field="notes" placeholder="Notes&hellip;">${entry.notes || ''}</textarea>
+        </div>
+      `;
+    }
+
+    function renderEditor() {
+      const wrap = document.getElementById('editor-wrap');
+      const campaign = currentCampaign();
+
+      if (!campaign) {
+        wrap.innerHTML = `<div class="empty-state">No campaign selected &mdash; create one to get started.</div>`;
+        return;
+      }
+
+      const tab = state.activeTab || 'npcs';
+      const entries = campaign[tab] || [];
+      const labels = { npcs: 'NPC', locations: 'Location', threads: 'Thread' };
+
+      const listHtml = entries.length
+        ? `<div class="entry-list">${entries.map(e => entryCardHtml(e, tab)).join('')}</div>`
+        : `<div class="empty-state">No ${labels[tab].toLowerCase()}s yet &mdash; add one below.</div>`;
+
+      wrap.innerHTML = `
+        <input type="text" class="campaign-name-input" id="campaign-name" value="${campaign.name.replace(/"/g, '&quot;')}">
+
+        <div class="tabs">
+          <div class="tab ${tab === 'npcs' ? 'is-active' : ''}" data-tab="npcs">NPCs <span class="tab-count">${campaign.npcs.length}</span></div>
+          <div class="tab ${tab === 'locations' ? 'is-active' : ''}" data-tab="locations">Locations <span class="tab-count">${campaign.locations.length}</span></div>
+          <div class="tab ${tab === 'threads' ? 'is-active' : ''}" data-tab="threads">Threads <span class="tab-count">${campaign.threads.length}</span></div>
+        </div>
+
+        <div class="toolbar">
+          <button class="btn" id="add-entry">+ Add ${labels[tab]}</button>
+          <button class="btn btn-ghost btn-sm" id="delete-campaign">Delete Campaign</button>
+        </div>
+
+        ${listHtml}
+      `;
+
+      document.getElementById('campaign-name').addEventListener('input', (e) => {
+        campaign.name = e.target.value;
+        save();
+        renderCampaignList();
+      });
+
+      document.querySelectorAll('.tab').forEach(t => {
+        t.addEventListener('click', () => {
+          state.activeTab = t.dataset.tab;
+          save();
+          renderEditor();
+        });
+      });
+
+      document.getElementById('add-entry').addEventListener('click', () => {
+        const newEntry = { id: uid(), name: '', notes: '' };
+        if (tab === 'npcs') newEntry.status = 'Unknown';
+        if (tab === 'threads') newEntry.status = 'Open';
+        campaign[tab].push(newEntry);
+        save();
+        renderEditor();
+        renderCampaignList();
+        const inputs = wrap.querySelectorAll('.entry-name-input');
+        if (inputs.length) inputs[inputs.length - 1].focus();
+      });
+
+      document.getElementById('delete-campaign').addEventListener('click', () => {
+        if (!confirm(`Delete "${campaign.name}" and everything in it? This can't be undone.`)) return;
+        state.campaigns = state.campaigns.filter(c => c.id !== campaign.id);
+        state.selectedId = state.campaigns.length ? state.campaigns[0].id : null;
+        save();
+        render();
+      });
+
+      wrap.querySelectorAll('[data-field]').forEach(el => {
+        const evt = el.tagName === 'SELECT' ? 'change' : 'input';
+        el.addEventListener(evt, () => {
+          const id = el.dataset.id;
+          const field = el.dataset.field;
+          const entry = campaign[tab].find(e => e.id === id);
+          if (!entry) return;
+          entry[field] = el.value;
+          save();
+          if (field === 'status' || field === 'name') {
+            // status affects the thread strike-through / toggle label, name doesn't need a full re-render
+            if (field === 'status') renderEditor();
+          }
+        });
+      });
+
+      wrap.querySelectorAll('[data-action="toggle-thread"]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const id = btn.dataset.id;
+          const entry = campaign.threads.find(e => e.id === id);
+          if (!entry) return;
+          entry.status = entry.status === 'Resolved' ? 'Open' : 'Resolved';
+          save();
+          renderEditor();
+        });
+      });
+
+      wrap.querySelectorAll('.entry-remove').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const id = btn.dataset.id;
+          campaign[tab] = campaign[tab].filter(e => e.id !== id);
+          save();
+          renderEditor();
+          renderCampaignList();
+        });
+      });
+    }
+
+    function render() {
+      renderCampaignList();
+      renderEditor();
+    }
+
+    document.getElementById('new-campaign').addEventListener('click', () => {
+      const id = uid();
+      state.campaigns.push({ id, name: 'New Campaign', npcs: [], locations: [], threads: [] });
+      state.selectedId = id;
+      state.activeTab = 'npcs';
+      save();
+      render();
+    });
+
+    render();
+  </script>
+
+</body>
+</html>
